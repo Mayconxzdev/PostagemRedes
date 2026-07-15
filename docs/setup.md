@@ -1,58 +1,59 @@
 # Configuração e credenciais
 
-## Pré-requisitos
+## Portal local de aprovação
 
-- n8n 2.27 ou superior em Docker.
-- Volume persistente montado em `/files`.
-- Acesso administrativo à instância n8n.
-- Contas autorizadas nas plataformas que serão usadas.
+Pré-requisitos do portal:
 
-## Importação
+- n8n 2.27 ou superior em Docker;
+- volume persistente montado no container como `/files`;
+- acesso à rede local do servidor n8n;
+- os três workflows do portal importados e publicados/ativos;
+- variáveis `NODE_FUNCTION_ALLOW_BUILTIN=fs,path` e `N8N_RESTRICT_FILE_ACCESS_TO=/files` configuradas no container.
 
-1. Importe os três arquivos da pasta `workflows/` como inativos.
-2. Crie as credenciais abaixo no n8n; não edite os JSONs para inserir segredos.
-3. No workflow principal, selecione o workflow de alerta no campo de tratamento de erro.
-4. Defina os webhooks com autenticação antes de ativar qualquer fluxo.
-5. Escolha e implemente a fila de aprovação antes de conectar o roteador de redes a publicações externas.
-6. Execute o roteiro de `docs/testing.md`.
+O endereço do painel segue este formato:
 
-## Credenciais necessárias
+```text
+http://<servidor-n8n>:5678/webhook/postagem-redes
+```
 
-| Serviço | Uso | Ação necessária |
+Crie um atalho `.url` com esse endereço para os computadores autorizados. O portal foi projetado para uso interno sem login; não o exponha na internet dessa forma.
+
+## Como colocar novos conteúdos
+
+### Biblioteca organizada
+
+Crie uma pasta dentro de `entrada/` para cada postagem:
+
+```text
+entrada/
+└── campanha-exemplo/
+    ├── 01.png
+    ├── 02.png
+    ├── 03.png
+    └── Texto.txt
+```
+
+As imagens devem ser PNG, JPG/JPEG ou WEBP. A ordenação usa o nome do arquivo; prefira prefixos `01`, `02`, `03` para um carrossel previsível. Ao clicar em **Atualizar biblioteca**, a nova postagem fica disponível.
+
+### Postagem rápida
+
+No painel, clique em **Nova postagem rápida**, informe o nome do responsável, um título, a legenda e envie de 1 a 10 imagens. O portal cria uma pasta segura na biblioteca e a coloca como pendente, sem depender de Google Sheets.
+
+## Credenciais para publicação externa
+
+O portal de aprovação não exige credenciais sociais. Elas só são necessárias ao conectar o publicador real, depois da homologação:
+
+| Serviço | Uso futuro | Ação necessária |
 |---|---|---|
-| Google Drive | Entrada e arquivamento de imagens | Conectar OAuth e selecionar pastas de origem/processados. |
-| Google Sheets | Histórico e idempotência | Conectar OAuth e criar ou selecionar a planilha de controle. |
-| Google Gemini | Análise visual | Criar credencial da API Gemini no n8n. |
-| OpenAI | Redação e fallback | Criar credencial OpenAI no n8n. |
-| Ollama | Redundância local | Informar URL da instância e validar o modelo disponível. |
-| Meta Graph API | Facebook e Instagram Business | Conectar conta Meta, página e Instagram Business vinculado. |
-| LinkedIn | Postagem por perfil/página | Conectar cada conta que poderá publicar. |
-| X | Mídia e postagens | Criar OAuth compatível com as permissões de mídia e post. |
+| Meta Graph API | Facebook e Instagram Business | Conectar página, Instagram Business e permissões de publicação. |
+| LinkedIn | Publicação por perfil/página | Conectar cada conta que poderá publicar e validar multi-imagem. |
+| X | Upload de mídia e thread | Criar OAuth com permissões compatíveis com mídia e posts. |
 | SMTP | Alertas operacionais | Criar credencial com remetente autorizado. |
-| API do n8n | Retry controlado | Criar chave de API exclusiva e armazená-la como Header Auth. |
+| Google Drive / Sheets | Integração legada opcional | Conectar OAuth somente se o fluxo legado voltar a ser usado. |
+| Gemini / OpenAI / Ollama | Geração assistida legada opcional | Criar/validar credenciais e modelo apenas para automação de conteúdo. |
 
-## Armazenamento de binários
+Crie segredos exclusivamente nas credenciais criptografadas do n8n; nunca edite exports de portfólio ou arquivos versionados para inserir tokens.
 
-O workflow usa a área persistente:
+## Migração dos workflows legados
 
-```text
-/files/postagem-redes/runtime/
-```
-
-Em Docker, ela deve estar associada a um volume ou diretório do host que seja incluído no backup operacional.
-
-## Webhooks
-
-Os caminhos de migração são:
-
-```text
-POST /webhook/postagem-redes-analise-imagem
-POST /webhook/postagem-redes-publicar-conteudo
-GET /webhook/postagem-redes-tente-novamente?id=<execution-id>
-```
-
-Configure um header secreto ou HMAC antes de ativá-los. O endpoint de retry também deve exigir Header Auth e usar uma chave de API exclusiva, com o menor escopo possível. Não use endpoints públicos sem autenticação para disparar geração, publicação ou retentativa.
-
-## Agendamentos legados
-
-O export original possui um agendamento ativo às 09h nas segundas, quartas e sextas, além de um segundo agendamento desativado às 13h nas terças, quartas e quintas. Revise esses horários e o fuso da instância antes da ativação.
+Os exports `01` a `03` continuam disponíveis para estudo e futura integração. Importe-os desativados, associe o workflow de erro ao orquestrador e valide cada serviço em ambiente de teste. Não ative publicação automática, agendamentos legados ou webhooks de publicação até terminar [docs/testing.md](testing.md).

@@ -1,84 +1,85 @@
 # Postagem Redes
 
-Automação de conteúdo e publicação multicanal construída no n8n para transformar imagens e pautas técnicas em posts prontos para revisão, publicação e rastreabilidade.
+Portal visual de curadoria, aprovação e preparação multicanal de conteúdo, construído no **n8n** para operações de marketing técnico B2B.
 
-O projeto nasceu para uma operação industrial B2B: recebe imagens e temas, analisa contexto visual, produz uma redação ajustada ao canal, controla histórico de uso e organiza a publicação em redes sociais. A implementação combina n8n, Google Drive, Google Sheets, modelos de IA, APIs sociais, tratamento de erros e retentativas controladas.
+O projeto transforma uma biblioteca local de carrosséis em uma fila clara de revisão: a pessoa responsável vê os slides, edita a legenda, escolhe as redes, aprova, agenda ou rejeita. Também pode criar uma postagem rápida enviando imagens e texto diretamente pelo navegador. A publicação externa fica separada da aprovação e só é conectada depois da homologação de cada conta.
 
-> Este repositório é uma versão de portfólio. Os workflows estão sanitizados: não há tokens, credenciais, IDs de contas, endereços internos ou dados de execução.
+> **Versão de portfólio.** Os workflows publicados aqui são sanitizados e inativos: não contêm credenciais, tokens, contas, e-mails reais, imagens corporativas, nem dados de execução.
 
-## O problema que resolve
-
-Em uma rotina de marketing técnico, produzir conteúdo consistente exige juntar imagem, contexto de produto, linguagem adequada a cada rede e controle para não reaproveitar a mesma pauta. Fazer isso manualmente consome tempo e torna difícil saber o que foi publicado, onde falhou e o que precisa ser retomado.
-
-O fluxo organiza essa operação em uma esteira única:
+## Demonstração do fluxo
 
 ```mermaid
 flowchart LR
-    A["Drive ou webhook\nImagem e pauta"] --> B["Normalização\ne validação do arquivo"]
-    B --> C["Análise visual\nGemini"]
-    C --> D["Redação\nOpenAI"]
-    D --> E["Fallback local\nOllama"]
-    E --> F["Auditoria e\nrevisão operacional"]
-    F --> G["Facebook e Instagram\nGraph API"]
-    F --> H["LinkedIn"]
-    F --> I["X / Twitter"]
-    F --> J["Sheets\nHistórico e idempotência"]
-    F --> K["Drive\nArquivamento"]
-    F --> L["E-mail\nSucesso ou falha"]
-    M["Error workflow"] --> L
-    N["Retry assistant"] --> F
+    A["Biblioteca local\ncarrosséis + Texto.txt"] --> B["Portal visual\nno n8n"]
+    C["Postagem rápida\nimagens + legenda"] --> B
+    B --> D["Revisão humana\nslides, legenda e redes"]
+    D --> E{"Decisão"}
+    E -->|Pendente| B
+    E -->|Aprovado| F["Fila de homologação"]
+    E -->|Agendado| G["Fila com data e hora"]
+    E -->|Rejeitado| H["Histórico da decisão"]
+    F -. "credenciais validadas" .-> I["Publicadores por rede"]
+    G -. "credenciais validadas" .-> I
+    I --> J["Instagram / Facebook\nLinkedIn / X thread"]
 ```
 
-## Principais capacidades
+## O que foi construído
 
-- Agendamento de geração de conteúdo em horários definidos.
-- Recebimento de imagem por Google Drive ou webhook.
-- Análise visual com Gemini e fallback por OpenAI/Ollama.
-- Geração de texto para conteúdo técnico B2B.
-- Registro de histórico e prevenção de repetição com Google Sheets.
-- Publicação planejada para Facebook, Instagram Business, LinkedIn e X.
-- Arquivamento de imagens processadas no Google Drive.
-- Alertas por e-mail para sucesso, falha parcial e erro de workflow.
-- Assistente de retry para retomar execuções com falha.
-- Estratégia de aprovação documentada antes da publicação em produção.
+- **Biblioteca visual de conteúdos:** lê pastas locais com imagens e `Texto.txt`, reconhece carrosséis e apresenta cada item em cards pesquisáveis.
+- **Prévia de aprovação real:** exibe todos os slides, permite trocar a legenda, selecionar redes, definir responsável, comentar a decisão e escolher pendente, aprovado, agendado ou rejeitado.
+- **Postagem rápida:** o responsável envia de 1 a 10 imagens e a legenda por uma tela simples, sem precisar criar pasta manualmente ou editar planilha.
+- **Rastreabilidade operacional:** cada decisão grava operador, data, comentário, redes escolhidas e estado em um ledger local com escrita atômica.
+- **Separação segura de responsabilidades:** aprovação organiza a fila; nenhum clique no portal publica externamente enquanto as credenciais não forem validadas.
+- **Compatibilidade com o legado:** os workflows históricos de geração por Google Drive/Sheets, IA, retry e alerta de erro permanecem exportados para estudo e evolução, sem acoplamento obrigatório ao portal.
 
-## Arquitetura dos workflows
+## Arquitetura
 
-| Workflow | Responsabilidade |
+| Camada | Responsabilidade | Implementação |
+|---|---|---|
+| Biblioteca | Descobrir carrosséis e legenda | Pastas locais persistentes montadas no container Docker |
+| Portal | Exibir, filtrar e receber decisões | Webhook `GET` do n8n que entrega uma interface HTML responsiva |
+| Arquivos | Servir somente os slides pertencentes ao item | Webhook `GET` com validação de identificador e nome de arquivo |
+| Ações | Gravar aprovação e receber envio rápido | Webhook `POST` com validação de dados e arquivo |
+| Estado | Manter status e auditoria | JSON local com arquivo temporário + lock de escrita |
+| Publicadores | Enviar para as redes após homologação | Evolução dos workflows de integração por plataforma |
+
+Os três novos exports do portal são complementares aos três workflows legados:
+
+| Workflow | Papel |
 |---|---|
-| `Postagem Redes — Orquestrador de Conteúdo` | Seleciona imagem, chama IA, prepara conteúdo, registra histórico e coordena as redes. |
-| `Postagem Redes — Alerta de Erros` | Recebe erros do n8n e envia um alerta operacional. |
-| `Postagem Redes — Assistente de Retry` | Recebe uma solicitação controlada para tentar novamente uma execução falha. |
+| `04-portal-visual.sanitized.json` | Entrega o painel de aprovação e a biblioteca de conteúdo. |
+| `05-portal-acoes.sanitized.json` | Recebe decisões e postagens rápidas, valida e registra o histórico. |
+| `06-portal-arquivos.sanitized.json` | Serve imagens de forma restrita para a prévia visual. |
+| `01` a `03` | Preservam a arquitetura legada de orquestração, alertas e retentativas. |
 
-Os exports sanitizados estão em [`workflows/`](workflows). Eles servem para estudo de arquitetura e revisão técnica; as credenciais devem ser criadas diretamente na instância n8n de destino.
+## Jornada de uso
 
-## Estado da migração
+1. Coloque um novo carrossel em uma subpasta da biblioteca, com imagens PNG/JPG/WEBP e `Texto.txt`; ou use **Nova postagem rápida** no portal.
+2. Abra o atalho corporativo do portal, pesquise o conteúdo e clique em **Revisar**.
+3. Navegue pelos slides, ajuste a legenda, selecione as redes e informe o responsável.
+4. Aprove imediatamente, agende ou rejeite com um comentário.
+5. Quando todas as contas estiverem homologadas, o publicador usará somente os itens aprovados/agendados e gravará o ID/permalink por rede.
 
-- Workflows revisados para o n8n 2.27.x.
-- Importação preparada para ocorrer desativada.
-- Webhooks renomeados para evitar colisão com outros projetos.
-- Arquivo temporário direcionado para volume persistente em `/files/postagem-redes/`.
-- Ligação entre orquestrador e workflow de erro recriada após a importação.
-- Publicação em redes permanece desativada até a validação manual das contas, credenciais e do mecanismo de aprovação.
+Consulte o guia detalhado em [docs/portal.md](docs/portal.md).
 
-## Como executar com segurança
+## Estado atual e segurança
 
-1. Importe os três JSONs sanitizados como workflows desativados.
-2. Crie as credenciais indicadas em [`docs/setup.md`](docs/setup.md).
-3. Configure a proteção dos webhooks antes de ativá-los.
-4. Implemente e valide o mecanismo de aprovação descrito em [`docs/architecture.md`](docs/architecture.md).
-5. Rode o plano de teste em [`docs/testing.md`](docs/testing.md) antes de habilitar qualquer publicação.
+O portal está pronto para operação de **homologação**: organiza conteúdo e registra decisões, mas não aciona Instagram, Facebook, LinkedIn ou X. Isto evita publicação indevida enquanto OAuth, permissões e limites de cada conta ainda são verificados.
 
-## Decisões de engenharia
+Foi escolhido acesso sem login para facilitar o uso em computadores autorizados da rede local. Consequentemente, qualquer dispositivo que alcance a URL do portal pode alterar a fila. A mitigação atual é o registro obrigatório do operador; antes de expor além da LAN, implemente autenticação, HTTPS e controle de acesso de rede. Veja [docs/security.md](docs/security.md).
 
-- **Sem credenciais no Git:** tokens e OAuth ficam exclusivamente no cofre de credenciais do n8n.
-- **Falha isolada por rede:** uma falha em uma plataforma não deve impedir o registro e a análise das demais.
-- **Rastreabilidade antes de automação total:** cada publicação deve registrar data, rede, status, ID e permalink.
-- **Aprovação antes da produção:** geração pode ser automática, mas publicação exige validação enquanto as contas são homologadas.
-- **Fallback de IA:** a cadeia Gemini → OpenAI → Ollama reduz indisponibilidades em serviços externos.
+## Como validar os exports
+
+```powershell
+node scripts/build-portal-workflows.mjs
+pwsh -File scripts/validate-workflows.ps1
+```
+
+O GitHub Actions executa validação de JSON, garante que os exports permaneçam inativos, rejeita blocos de credenciais e impede e-mails reais no material de portfólio.
 
 ## Documentação
 
+- [Portal e operação diária](docs/portal.md)
 - [Arquitetura](docs/architecture.md)
 - [Configuração e credenciais](docs/setup.md)
 - [Segurança](docs/security.md)
@@ -87,8 +88,8 @@ Os exports sanitizados estão em [`workflows/`](workflows). Eles servem para est
 
 ## Tecnologias
 
-`n8n` · `Docker` · `Google Drive` · `Google Sheets` · `Gemini` · `OpenAI` · `Ollama` · `Meta Graph API` · `LinkedIn API` · `X API` · `SMTP`
+`n8n` · `Docker` · `JavaScript` · `Node.js` · `Webhooks` · `Google Drive` · `Google Sheets` · `Gemini` · `OpenAI` · `Ollama` · `Meta Graph API` · `LinkedIn API` · `X API` · `SMTP`
 
 ## Autor
 
-Desenvolvido por [Maycon Xavier](https://github.com/Mayconxzdev) como projeto de automação de conteúdo e operação multicanal.
+Desenvolvido por [Maycon Xavier](https://github.com/Mayconxzdev) como projeto de automação de conteúdo, interface operacional e publicação multicanal.

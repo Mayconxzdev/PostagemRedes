@@ -2,55 +2,74 @@
 
 ## Princípio operacional
 
-O workflow legado concentra geração e publicação no mesmo orquestrador. Na migração, ele permanece inativo para que a aprovação humana seja introduzida antes de qualquer ação externa. A arquitetura-alvo abaixo separa a geração da decisão de publicação, permitindo revisar textos e imagens e mantendo o histórico de cada rede auditável.
+O projeto separa claramente três responsabilidades que costumam ficar misturadas em automações de redes sociais:
+
+1. **Preparar conteúdo** — receber carrosséis e legendas de uma biblioteca local ou de um envio rápido.
+2. **Decidir com uma pessoa** — visualizar o resultado e registrar aprovação, agendamento, rejeição ou necessidade de ajuste.
+3. **Publicar por plataforma** — ação externa que só pode consumir itens aprovados depois da homologação de credenciais e regras de cada API.
 
 ```mermaid
 sequenceDiagram
-    participant T as Trigger
-    participant D as Google Drive
-    participant AI as Camada de IA
-    participant A as Aprovação
-    participant S as Redes sociais
-    participant H as Sheets / Histórico
+    participant U as Responsável
+    participant P as Portal n8n
+    participant L as Biblioteca local
+    participant Q as Ledger da fila
+    participant R as Publicador por rede
+    participant S as Rede social
 
-    T->>D: Seleciona imagem e pauta
-    D->>AI: Envia binário normalizado
-    AI->>AI: Gemini, OpenAI e fallback Ollama
-    AI->>A: Entrega conteúdo estruturado
-    A->>S: Autoriza publicação por rede
-    S->>H: Registra status, ID e permalink
-    S-->>A: Erro parcial ou sucesso
+    U->>P: Abre o painel pela rede local
+    P->>L: Descobre pastas, slides e Texto.txt
+    L-->>P: Conteúdos pendentes
+    U->>P: Revisa slides, legenda e redes
+    P->>Q: Grava operador, decisão e data
+    Note over P,R: Sem credenciais homologadas, o fluxo termina aqui
+    Q->>R: Entrega somente aprovado/agendado
+    R->>S: Publica conforme regras da plataforma
+    S-->>Q: ID remoto, permalink e status
 ```
 
-## Componentes
+## Portal visual
 
-### Entrada e conteúdo
+O portal é composto por três webhooks de produção do n8n, todos no mesmo host/porta da instância:
 
-- O export original traz um gatilho ativo às 09h, às segundas, quartas e sextas, e um segundo gatilho desativado às 13h, às terças, quartas e quintas. Esses horários são pontos de configuração, não uma política definitiva.
-- Um webhook recebe binários para análise sob demanda.
-- O Google Drive é usado para selecionar, baixar e arquivar imagens.
+| Rota | Método | Função |
+|---|---:|---|
+| `/webhook/postagem-redes` | `GET` | Renderiza biblioteca, filtros, modais e prévia do carrossel. |
+| `/webhook/postagem-redes-api` | `POST` | Recebe decisão em JSON ou imagens enviadas pelo formulário de postagem rápida. |
+| `/webhook/postagem-redes-arquivo` | `GET` | Entrega uma imagem já validada como pertencente ao conteúdo solicitado. |
 
-### Inteligência e fallback
+Os workflows usam nós **Code** restritos ao volume persistente `/files/postagem-redes`. O endpoint de arquivos rejeita nomes com caminho, extensões não permitidas e itens que não pertençam à biblioteca atual.
 
-1. Gemini interpreta a imagem e gera contexto técnico.
-2. OpenAI monta a redação principal.
-3. Ollama funciona como redundância local quando serviços externos falham.
-4. Nós de auditoria verificam saída, tamanho e presença de dados essenciais.
+## Biblioteca e estado
 
-### Publicação e rastreabilidade
+Estrutura operacional esperada:
 
-- Facebook e Instagram usam a Meta Graph API.
-- LinkedIn possui rotas independentes por conta.
-- X usa upload de mídia e publicação separados.
-- Google Sheets registra conteúdo já utilizado, reduzindo duplicidade.
-- Google Drive recebe a mídia concluída em uma pasta de processados.
+```text
+postagem-redes/
+├── entrada/
+│   └── meu-carrossel/
+│       ├── 01.png
+│       ├── 02.png
+│       └── Texto.txt
+├── rascunhos/
+├── rejeitados/
+├── publicados/
+└── state.json
+```
 
-### Operação
+- Cada subpasta em `entrada/` é um conteúdo. O portal suporta PNG, JPG/JPEG e WEBP.
+- `Texto.txt` fornece a legenda inicial; alterações feitas no portal ficam registradas no estado, sem sobrescrever o arquivo original.
+- `state.json` armazena apenas metadados de operação: estado, legenda aprovada, redes, data, auditoria e agendamento. A escrita usa arquivo temporário, rename atômico e lock simples para reduzir conflito entre usuários.
+- O JSON é adequado para a atual biblioteca pequena e LAN. Para alta concorrência, auditoria regulatória ou muitas campanhas, a evolução correta é mover a fila e o histórico para PostgreSQL/Data Table.
 
-- Um workflow global de erro recebe falhas não tratadas.
-- Um assistente de retry pode reexecutar uma execução específica mediante autenticação.
-- Alertas por e-mail informam sucesso e falhas parciais.
+## Publicação futura por plataforma
 
-## Limites deliberados
+O portal não chama APIs sociais. A próxima camada deve consumir somente registros `aprovado` ou `agendado`, criar uma chave de idempotência por conteúdo/rede e registrar `publishing`, `published` ou `failed`.
 
-O projeto não ativa publicações automaticamente até que todas as credenciais, permissões de cada plataforma e o modo de aprovação tenham sido homologados. O export legado ainda não contém uma fila de aprovação obrigatória; a evolução recomendada é registrar cada rascunho com os estados `draft`, `approved`, `rejected`, `publishing`, `published` e `failed`, e permitir que somente `approved` alcance o roteador de redes. Isso evita publicação indevida durante instalação ou manutenção.
+| Plataforma | Adaptação necessária |
+|---|---|
+| Instagram / Facebook | Publicar carrossel/mídia pela API Graph, respeitando as regras atuais de conta Business/Page. |
+| LinkedIn | Usar a rota atual de publicação multi-imagem e registrar URNs/permalinks. |
+| X | Converter o carrossel em sequência/thread: um post inicial e respostas encadeadas, com mídia e texto adaptados aos limites da plataforma. |
+
+Os workflows legados de IA, Google Drive/Sheets, alertas e retry permanecem isolados. Podem alimentar esta fila posteriormente, mas não são necessários para que uma pessoa use o portal local.
