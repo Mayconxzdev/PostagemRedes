@@ -21,6 +21,20 @@ Em vez de depender de planilhas e passos manuais, quem opera visualiza o conteú
 
 As telas acima foram geradas a partir do mesmo template usado pelo portal, usando uma biblioteca demonstrativa anônima. A [demo estática](docs/demo/index.html) e seus assets vivem no repositório para que a interface possa ser revisada sem acesso à infraestrutura interna.
 
+## Workflows n8n — canvas e responsabilidades
+
+Além da interface, a automação foi construída como workflows pequenos e verificáveis. Os canvases abaixo reproduzem os nós, versões e responsabilidades dos exports sanitizados; foram redesenhados para o portfólio sem nomes de clientes, URLs internas, credenciais ou dados de execução.
+
+<p align="center">
+  <img src="docs/assets/workflows/01-portal-visual-n8n.svg" alt="Canvas n8n do workflow publicado Portal Visual: Webhook, Code e Respond to Webhook" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/assets/workflows/02-fila-e-roteador-n8n.svg" alt="Canvas n8n da Fila e roteador: Schedule Trigger, Code, Loop Over Items, Switch e idempotência" width="100%" />
+</p>
+
+O primeiro fluxo está **publicado** no ambiente operacional e responde o portal. O segundo é o desenho de publicação multicanal **intencionalmente inativo**: ele só é conectado após a homologação de OAuth, IDs de páginas e teste de cada plataforma. Essa distinção faz parte da segurança do projeto — aprovação não dispara postagem externa por acidente.
+
 ## O problema que resolvi
 
 Em uma operação de conteúdo técnico B2B, aprovar um carrossel não é apenas enviar uma imagem: envolve ordem dos slides, adequação da legenda, canais de destino, agendamento, responsável e histórico da decisão. O fluxo anterior concentrava isso entre planilha, Google Drive e automações difíceis de auditar.
@@ -106,7 +120,7 @@ workflows/    Exports sanitizados e inativos do n8n
 scripts/      Geradores e validadores reproduzíveis
 docs/         Arquitetura, segurança, testes e auditoria do legado
 docs/demo/    Demonstração estática anonimizada
-docs/assets/  Capturas reais da demo e slides ilustrativos
+docs/assets/  Capturas reais da demo, canvases n8n sanitizados e slides ilustrativos
 ```
 
 ## Documentação técnica

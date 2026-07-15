@@ -11,7 +11,7 @@ A versão legada concentrava seleção em Google Drive/Sheets, geração e publi
 - ledger de decisão com operador, horário, comentário e redes;
 - nenhum conector de rede é chamado por aprovação nesta etapa.
 
-Na revisão de 15/07/2026, a instância local em uso estava em n8n 2.27.3 e expunha 896 tipos de nós. Foram adicionados cinco workflows **inativos** de publicação e monitoramento, todos usando versões atuais dos nós instalados:
+Na revisão de 15/07/2026, a instância local em uso estava em n8n 2.27.3 e expunha 896 tipos de nós. O ambiente foi reduzido a cinco workflows publicados e realmente utilizados: dois do Mala Direta e os três webhooks do Portal de Postagem. Os oito canvases que não eram produção foram arquivados de forma reversível após a auditoria. Os cinco exports de publicação/monitoramento (`07` a `11`) permanecem no Git como rascunhos de homologação, todos usando versões atuais dos nós instalados:
 
 - `Schedule Trigger` 1.3 e `Loop Over Items (Split in Batches)` 3 para fila controlada;
 - `Switch` 3.4 e `If` 2.3 para roteamento e pré-validação;
@@ -20,7 +20,7 @@ Na revisão de 15/07/2026, a instância local em uso estava em n8n 2.27.3 e expu
 - `LinkedIn` 1 como alternativa nativa de uma imagem, com Posts API multiimagem em HTTP Request;
 - `Send Email` 2.1 e `Error Trigger` para monitoramento.
 
-Nenhum workflow novo foi ativado nessa etapa. A atualização é estrutural: deixa o canvas moderno, auditável e pronto para conectar acessos sem mudar o comportamento do portal nem do Mala Direta.
+Nenhum publicador social foi ativado nessa etapa. A atualização é estrutural: deixa o canvas moderno, auditável e pronto para conectar acessos sem mudar o comportamento do portal nem do Mala Direta.
 
 ## Compatibilidade com workflows legados
 

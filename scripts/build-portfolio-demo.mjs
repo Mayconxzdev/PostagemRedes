@@ -5,12 +5,14 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const templatePath = path.join(root, 'portal', 'portal-template.html');
 const destination = path.join(root, 'docs', 'demo', 'index.html');
+// Mantém a demo reproduzível: uma geração local não pode criar ruído de diff só por mudar horários.
+const demoNow = new Date('2026-07-15T12:00:00.000Z');
 
 const audit = (action, comment, minutesAgo) => ({
   action,
   operator: 'Equipe de Conteúdo',
   comment,
-  at: new Date(Date.now() - minutesAgo * 60_000).toISOString(),
+  at: new Date(demoNow.getTime() - minutesAgo * 60_000).toISOString(),
 });
 
 const contents = [
@@ -23,7 +25,7 @@ const contents = [
     status: 'pendente',
     networks: ['instagram', 'linkedin'],
     scheduleAt: '',
-    updatedAt: new Date(Date.now() - 20 * 60_000).toISOString(),
+    updatedAt: new Date(demoNow.getTime() - 20 * 60_000).toISOString(),
     audit: [audit('pendente', 'Rascunho criado para revisão técnica.', 20)],
   },
   {
@@ -35,7 +37,7 @@ const contents = [
     status: 'aprovado',
     networks: ['facebook', 'linkedin', 'x'],
     scheduleAt: '',
-    updatedAt: new Date(Date.now() - 90 * 60_000).toISOString(),
+    updatedAt: new Date(demoNow.getTime() - 90 * 60_000).toISOString(),
     audit: [audit('pendente', 'Material preparado pela equipe.', 180), audit('aprovado', 'Aprovado para a próxima janela de publicação.', 90)],
   },
   {
@@ -46,8 +48,8 @@ const contents = [
     assetVersion: 1,
     status: 'agendado',
     networks: ['instagram', 'facebook'],
-    scheduleAt: new Date(Date.now() + 24 * 60 * 60_000).toISOString(),
-    updatedAt: new Date(Date.now() - 4 * 60 * 60_000).toISOString(),
+    scheduleAt: new Date(demoNow.getTime() + 24 * 60 * 60_000).toISOString(),
+    updatedAt: new Date(demoNow.getTime() - 4 * 60 * 60_000).toISOString(),
     audit: [audit('aprovado', 'Conteúdo aprovado após revisão de legenda.', 300), audit('agendado', 'Agendado para o próximo ciclo editorial.', 240)],
   },
   {
@@ -59,7 +61,7 @@ const contents = [
     status: 'rejeitado',
     networks: [],
     scheduleAt: '',
-    updatedAt: new Date(Date.now() - 26 * 60 * 60_000).toISOString(),
+    updatedAt: new Date(demoNow.getTime() - 26 * 60 * 60_000).toISOString(),
     audit: [audit('rejeitado', 'Revisar chamada do primeiro slide antes de publicar.', 1560)],
   },
 ];

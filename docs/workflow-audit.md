@@ -6,6 +6,20 @@ A revisão foi feita contra a instância local em n8n 2.27.3. O orquestrador leg
 
 Os workflows `07` a `11` foram criados para substituir o que ainda tem papel operacional, com responsabilidades menores e nós atuais. Eles também estão inativos.
 
+### Inventário operacional validado — 15/07/2026
+
+A lista da instância foi confrontada com status de publicação, histórico de execuções e conexões de cada canvas antes da limpeza. Permaneceram visíveis como produção somente cinco workflows:
+
+| Workflow publicado | Papel validado | Evidência operacional |
+|---|---|---|
+| `Mala Direta Vesper — Principal (Atalho)` | Portal, fila, agendamento, exportação e envio de campanha. | 147 nós; execuções de sucesso recentes; webhook e agendamentos ativos. |
+| `Mala Direta Vesper — Tratamento de Erros (Ativo)` | Recebe e registra falhas do workflow principal. | `Error Trigger` associado ao workflow principal. |
+| `Postagem Redes — Portal Visual` | Entrega a biblioteca visual. | Webhook GET publicado, com execuções de sucesso recentes. |
+| `Postagem Redes — Portal: Arquivos` | Entrega mídias autorizadas ao portal. | Webhook publicado, com execuções de sucesso recentes. |
+| `Postagem Redes — Portal: Ações` | Persiste decisão, ordem de slides e uploads. | Webhook publicado; cadeia Webhook → Code → Respond sem conexões quebradas. |
+
+Os oito workflows restantes foram **arquivados, não apagados**: os cinco rascunhos `07`–`11` ainda dependem de OAuth/IDs reais e os três legados não participam do portal atual. Arquivar limpa a visão padrão do n8n e mantém uma recuperação possível caso seja necessário consultar o histórico. Os exports sanitizados continuam no Git apenas como documentação e base de homologação.
+
 ## Mapa de substituição
 
 | Bloco legado | Situação | Destino atualizado | Motivo |
