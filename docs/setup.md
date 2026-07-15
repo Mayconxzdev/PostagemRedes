@@ -76,7 +76,6 @@ O portal de aprovação não exige credenciais sociais. Elas só são necessári
 | LinkedIn | `Portal: Ações` | **LinkedIn Community Management OAuth2** para a Página da empresa | URN/ID da organização e versão atual da API LinkedIn. |
 | X | `Portal: Ações` | OAuth2 da aplicação X com leitura/escrita e escopo de mídia | Nenhum segredo no canvas; somente configuração de thread, mídia e IDs retornados. |
 | SMTP | `Portal: Ações` | SMTP dedicado para falhas operacionais | Remetente autorizado e caixa/grupo que receberá os avisos. |
-| Google Drive / Sheets | Integração legada opcional | Conectar OAuth somente se o fluxo legado voltar a ser usado. |
 
 Crie segredos exclusivamente nas credenciais criptografadas do n8n; nunca edite exports de portfólio ou arquivos versionados para inserir tokens.
 
@@ -99,8 +98,8 @@ Para eu terminar a ligação real quando você estiver pronto, envie apenas esta
 
 Não envie senhas, tokens, client secret, bearer token, cookie de sessão ou chave privada por chat. Se algum segredo já foi exposto, revogue-o e crie outro antes de configurar o n8n.
 
-## Ledger e migração dos workflows legados
+## Ledger e escopo dos exports
 
 `Portal: Ações` cria automaticamente a Data Table interna **Postagem Redes - Ledger** quando o agendador roda pela primeira vez. Ela espelha cada sucesso/falha por rede com conteúdo, dispatch ID, ID remoto, permalink, erro e horário. O `state.json` continua sendo a fonte imediata da biblioteca visual; a Data Table torna o histórico consultável dentro do n8n sem planilha ou banco externo.
 
-Os exports `01` a `03` e `07` a `11` continuam apenas como referência de migração. O ambiente operacional usa exclusivamente os três workflows do portal. Não ative publicação automática, agendamentos legados ou webhooks de publicação dos exports arquivados.
+O repositório contém exclusivamente os três exports sustentados (`04` a `06`). Fluxos históricos não são parte da instalação proposta nem da vitrine pública. Consulte [workflow-audit.md](workflow-audit.md) para a decisão de consolidação.

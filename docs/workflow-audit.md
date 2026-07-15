@@ -1,55 +1,47 @@
-# Auditoria dos workflows legados
+# Consolidação dos workflows
 
-## Resultado da revisão
+## Decisão de portfólio
 
-A revisão foi feita contra a instância local em n8n 2.27.3. O orquestrador legado (`03-orquestrador-conteudo`) possui 63 nós, está inativo e mistura geração de conteúdo, Google Drive/Sheets, publicação, alertas e retentativas no mesmo canvas. Ele é útil como histórico, mas não deve ser reativado como publicador da fila visual.
+Em 15/07/2026, a instância local foi revisada em n8n 2.27.3. A revisão separou duas coisas que não devem ser confundidas em uma apresentação profissional:
 
-Os workflows `07` a `11` foram úteis como rascunhos de migração, mas foram arquivados. As responsabilidades úteis foram incorporadas no workflow produtivo `Postagem Redes — Portal: Ações`, sem voltar a espalhar o publicador em cinco automações ativas.
+1. **a operação atual**, mantida por três workflows ativos de Postagem Redes; e
+2. **histórico de migração**, formado por rascunhos antigos de planilha, Drive, alertas e publicadores separados.
 
-### Inventário operacional validado — 15/07/2026
+Os rascunhos históricos não fazem parte deste repositório público. Eles tinham valor de diagnóstico, mas adicionavam código e referências antigas que não representam a arquitetura que está em uso. Manter somente os exports sustentados torna a revisão mais objetiva e evita a leitura equivocada de que vários caminhos concorrentes precisam ser ativados.
 
-A lista da instância foi confrontada com status de publicação, histórico de execuções e conexões de cada canvas antes da limpeza. Permaneceram visíveis como produção somente cinco workflows:
+## Inventário operacional validado
 
-| Workflow publicado | Papel validado | Evidência operacional |
+| Workflow ativo | Papel validado | Escopo |
 |---|---|---|
-| `Mala Direta Vesper — Principal (Atalho)` | Portal, fila, agendamento, exportação e envio de campanha. | 147 nós; execuções de sucesso recentes; webhook e agendamentos ativos. |
-| `Mala Direta Vesper — Tratamento de Erros (Ativo)` | Recebe e registra falhas do workflow principal. | `Error Trigger` associado ao workflow principal. |
-| `Postagem Redes — Portal Visual` | Entrega a biblioteca visual. | Webhook GET publicado, com execuções de sucesso recentes. |
-| `Postagem Redes — Portal: Arquivos` | Entrega mídias autorizadas ao portal. | Webhook publicado, com execuções de sucesso recentes. |
-| `Postagem Redes — Portal: Ações` | Persiste decisão, IA com fallback, fila, publicação por rede, retry e Ledger. | 53 nós; Webhook + agendamento ativos; quatro notas organizam visualmente Portal/IA, Fila, APIs e Resultado; rotas Meta, LinkedIn e X bloqueadas até a homologação por variável. |
+| `Postagem Redes — Portal Visual` | Entrega biblioteca, filtros, editor e upload rápido. | Sem publicação externa. |
+| `Postagem Redes — Portal: Ações` | Persiste decisões, IA assistiva, fila, retry, ledger e rotas sociais. | Publicação bloqueada até homologação por variável. |
+| `Postagem Redes — Portal: Arquivos` | Entrega mídias autorizadas ao portal. | Valida item/nome; URL assinada no modo público. |
 
-Os workflows restantes foram **arquivados, não apagados**: os rascunhos `07`–`11` e os legados não participam do portal atual. Arquivar limpa a visão padrão do n8n e mantém uma recuperação possível caso seja necessário consultar o histórico. Os exports sanitizados continuam no Git apenas como documentação da migração.
+Os dois workflows de Mala Direta permanecem fora deste repositório e não foram modificados por essa consolidação.
 
-## Mapa de substituição
+## Responsabilidades incorporadas
 
-| Bloco legado | Situação | Destino atualizado | Motivo |
-|---|---|---|---|
-| Google Sheets/Drive como fila principal | Opcional, não é mais a operação diária | Portal + fila integrada ao `Portal: Ações` | O portal já recebe biblioteca e postagem rápida sem planilha. |
-| `Split in Batches` antigo | Substituído | `Loop Over Items` v3 | Processa uma entrega por vez, preservando ordem e controle de retry. |
-| `Switch`/`If` antigos | Substituídos | `Switch` 3.4 e `If` 2.3 | Roteamento explícito por rede e bloqueio por pré-requisito. |
-| “Vagões” HTTP de Instagram | Refeito | Rota Meta integrada | Containers, espera e publicação de carrossel no mesmo orquestrador. |
-| `Postagem instagram` (`NoOp`) | Removido do caminho produtivo | Rota Meta integrada | O nó não publicava; apenas mascarava a ausência de integração. |
-| Facebook HTTP único | Refeito | Rota Meta integrada | Carrossel de Página exige fotos/IDs e post final, não uma chamada genérica. |
-| Twitter legado/OAuth 1 | Substituído | X v2 integrado | Nó nativo X para post/respostas e HTTP para upload de mídia v2. |
-| LinkedIn de pessoas específicas | Substituído | Página da empresa integrada | Upload de imagens + Posts API multi-imagem para organização. |
-| Google Drive/Sheets de histórico | Legado opcional | Data Table + ledger local | Evita duplicar a fonte de verdade da fila. |
-| `Gravar no Disco`, `Ler do Disco`, `Code (Goleiro)` desconectados | Não usar | Portal/ledger atual | Estavam fora do caminho executável do legado. |
-| `Verificação da imagem` e `[Sheets] Registrar Uso1` desconectados | Não usar | Validação no portal + ledger | Não participavam do fluxo real. |
-| IA Gemini/OpenAI/Ollama com fallback | Incorporado | OpenAI → Gemini → Ollama | Geração assistida permanece rascunho e nunca publica sem revisão humana. |
-| E-mails de sucesso/falha | Futuro opcional | Error workflow do n8n | O Ledger registra a falha; um Error Trigger/SMTP pode ser conectado sem alterar o publicador. |
+| Necessidade da automação anterior | Solução atual | Por que é mais segura |
+|---|---|---|
+| Planilha/Drive como fila principal | Portal visual + estado local + Ledger nativo | A operação diária não depende de editar uma planilha. |
+| Geração e publicação no mesmo caminho | Rascunho de IA separado da decisão | A IA não publica e não sobrescreve texto aprovado. |
+| Retentativa genérica | Reserva por destino, `dispatchId` e até três tentativas | Evita repetir uma publicação confirmada em outra rede. |
+| Um conector igual para todas as redes | Faixas específicas de Meta, LinkedIn e X | Respeita mídia, carrossel e thread de cada API. |
+| Histórico disperso | `state.json` + Data Table `Postagem Redes - Ledger` | Mantém decisão e resultado consultáveis. |
 
-## Nós intencionalmente mantidos
+## Nós usados de forma intencional
 
-Nem tudo que usa Code ou HTTP Request é “legado”. Para este projeto, esses nós têm papel objetivo:
+- **Code:** leitura controlada da biblioteca/ledger local, normalização, assinatura de URL e adaptação de thread. O acesso fica limitado ao volume `/files`.
+- **Webhook e Respond to Webhook:** separam interface (`GET`), ações (`POST`) e mídia (`GET`) para reduzir exposição e acoplamento.
+- **Data Table:** ledger interno de resultados por rede, sem exigir um banco externo para a escala atual.
+- **Schedule Trigger + Loop Over Items:** selecionam e processam uma entrega por vez, preservando a reserva e a ordem de retry.
+- **OpenAI, Google Gemini e Ollama:** cadeia de IA desligada por padrão; o resultado é somente uma sugestão revisável.
+- **HTTP Request:** usado onde o nó nativo ainda não cobre o contrato completo de carrossel/multiimagem/mídia. Isso é mais explícito do que reduzir silenciosamente o conteúdo a uma imagem.
+- **X v2:** criação de post e respostas; o fluxo de mídia fica separado conforme o contrato da plataforma.
 
-- **Code**: leitura controlada da biblioteca/ledger local, normalização de conteúdo, adaptação de thread e sanitização de erro. O acesso é limitado ao volume `/files`.
-- **HTTP Request 4.4**: partes das APIs sociais que não têm um nó nativo completo, principalmente carrosséis Meta, multiimagem LinkedIn e mídia X.
-- **LinkedIn nativo**: mantido como alternativa de teste para texto/uma imagem, mas desativado no canvas para não reduzir silenciosamente um carrossel.
-- **X nativo v2**: usado para criação do post e respostas; o upload de mídia não é coberto pelo nó atual e por isso fica separado.
+## Guardrails de ativação
 
-## O que não deve ser feito
-
-- Não ative o orquestrador `03` para publicar a fila do portal.
-- Não conecte os publicadores novos diretamente a uma conta real antes do teste de uma conta/canal de teste.
-- Não cole tokens em nós Code, parâmetros, exports, GitHub ou chat.
-- Não atualize a versão global do n8n junto com esta migração: a mesma instância atende o Mala Direta e a atualização deve ocorrer em uma manutenção isolada, com backup e teste.
+- Não liberar `SOCIAL_PUBLISH_ENABLED` antes de homologar uma conta de teste por rede e confirmar IDs/permalinks no Ledger.
+- Não adicionar segredos ao canvas, aos exports, ao GitHub ou ao chat; use somente o cofre criptografado de credenciais do n8n.
+- Não expor o portal da LAN sem HTTPS, autenticação e uma regra de rede apropriada.
+- Não alterar a imagem global do n8n durante a homologação: a mesma instância atende outro processo operacional e atualizações precisam de janela de manutenção e backup.

@@ -24,11 +24,9 @@ Na revisão de 15/07/2026, a instância local em uso estava em n8n 2.27.3 e expu
 
 Nenhuma publicação social foi executada nesta etapa. A atualização deixa o canvas moderno, auditável e pronto para conectar acessos, sem alterar o comportamento do portal nem do Mala Direta enquanto `SOCIAL_PUBLISH_ENABLED=false`.
 
-## Compatibilidade com workflows legados
+## Consolidação do escopo
 
-Os workflows legados de orquestração, alerta de erros e retry permanecem arquivados e inativos. Não foram apagados porque documentam a arquitetura anterior: geração assistida por IA, armazenamento externo, tratamento de falhas e retentativas. Consulte o inventário em [workflow-audit.md](workflow-audit.md) antes de reutilizar qualquer trecho deles.
-
-O portal não exige Google Drive ou Google Sheets para a operação diária. Quando necessário, o orquestrador legado pode ser evoluído para criar rascunhos diretamente na fila visual, em vez de publicar ao concluir a geração.
+O portal não exige Google Drive ou Google Sheets para a operação diária. As partes aproveitáveis da arquitetura anterior — geração assistida, reserva, retry e trilha de resultado — foram absorvidas pelo `Portal: Ações`. Os rascunhos históricos foram excluídos da vitrine pública para não induzir a ativação de caminhos concorrentes ou obsoletos. A decisão e as responsabilidades atuais estão em [workflow-audit.md](workflow-audit.md).
 
 ## Itens que exigem configuração manual
 

@@ -1,5 +1,11 @@
 # Exports de portfólio
 
-Os arquivos desta pasta são versões sanitizadas e inativas dos workflows. Eles preservam a arquitetura, os nós e as conexões para revisão técnica, mas removem credenciais, identificadores de contas, e-mails reais, dados fixados de execução e IDs de recursos internos.
+Esta pasta contém somente os três workflows mantidos pelo projeto:
 
-Não use estes arquivos como backup de produção. O backup operacional deve permanecer protegido e fora do Git. Para uma nova instalação, importe os workflows desativados, configure credenciais diretamente no n8n e siga o plano de homologação descrito em `../docs/`.
+- `04-portal-visual.sanitized.json`
+- `05-portal-acoes.sanitized.json`
+- `06-portal-arquivos.sanitized.json`
+
+São exports **sanitizados e inativos**. Eles preservam nós, conexões, organização visual e configurações necessárias para revisão técnica, mas removem credenciais, identificadores de contas, e-mails reais, dados de execução e IDs internos.
+
+Não use estes arquivos como backup de produção. O backup operacional deve permanecer protegido e fora do Git. Para uma instalação nova, importe os três exports, configure as credenciais diretamente no cofre do n8n e siga o plano de homologação em `../docs/setup.md`.

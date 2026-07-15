@@ -92,4 +92,4 @@ O estado por rede fica em `deliveries`: `draft`, `queued`, `dispatching`, `retry
 - A publicação externa fica desligada enquanto `SOCIAL_PUBLISH_ENABLED` não for habilitada depois de cada conta ser homologada.
 - A entrega pública de mídias só é exigida quando `SOCIAL_MEDIA_REQUIRE_SIGNED_URLS=true`; os links incluem assinatura HMAC e expiração de duas horas.
 
-Os workflows legados de IA, Google Drive/Sheets, alertas e retry permanecem arquivados para referência, mas não participam do portal operacional.
+Os caminhos históricos de planilha, Drive, alertas e retry não fazem parte dos exports públicos. As responsabilidades que continuam úteis foram consolidadas nos três workflows mantidos; a decisão está documentada em [workflow-audit.md](workflow-audit.md).

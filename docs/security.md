@@ -26,7 +26,7 @@ Controles obrigatórios antes de qualquer exposição fora da LAN:
 - Não envie credenciais por JSON, Git, planilha, e-mail, webhook ou comentário do portal.
 - Use credenciais distintas por ambiente e por serviço quando possível.
 - Revogue e recrie tokens em troca de responsável, suspeita de vazamento ou mudança de permissões.
-- Configure uma credencial/API key exclusiva e de menor privilégio para o retry legado.
+- Configure credenciais/API keys exclusivas e de menor privilégio para cada integração habilitada.
 
 ## Publicação segura
 

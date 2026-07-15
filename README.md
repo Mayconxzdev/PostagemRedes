@@ -2,131 +2,129 @@
 
 [![Validação dos exports](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml)
 
-**Projeto autoral de [Mayconxzdev](https://github.com/Mayconxzdev)** — uma central visual construída no n8n para transformar carrosséis técnicos em uma fila clara de revisão, aprovação, agendamento e publicação multicanal.
+**Projeto autoral de [Mayconxzdev](https://github.com/Mayconxzdev)** para organizar a publicação de conteúdo técnico B2B: uma biblioteca visual de carrosséis, revisão humana, aprovação, agendamento e uma fila protegida para Instagram, Facebook, LinkedIn e X.
 
-Em vez de depender de planilhas e passos manuais, quem opera visualiza o conteúdo como ele será publicado, ajusta legenda e destinos, registra a decisão e mantém a rastreabilidade da fila. A publicação externa é uma etapa independente e protegida por homologação de conta.
+O problema não era somente "postar em quatro redes". Era dar a uma pessoa não técnica uma tela para enxergar o carrossel, ajustar a legenda, ordenar slides, registrar quem decidiu e impedir que uma aprovação disparasse uma publicação indevida. O projeto substitui a operação espalhada entre planilha, armazenamento e fluxos difíceis de auditar por uma camada operacional centrada no n8n.
 
-> Versão de portfólio segura: workflows inativos, dados fictícios, telas anonimizadas e nenhum token, e-mail corporativo, conta social ou imagem de cliente.
+> **Leitura honesta do estado:** os três workflows abaixo existem na instância local n8n e estão ativos para o portal, biblioteca e fila. Os exports deste repositório são sanitizados e **inativos por design**: não carregam tokens, contas, IDs corporativos ou dados de clientes. As chamadas externas permanecem protegidas até a homologação OAuth de cada rede.
 
-## Produto em uso
+## Meu papel
+
+- Desenho do fluxo e da política de aprovação antes de publicação.
+- Construção do portal operacional em HTML/CSS/JavaScript dentro do n8n.
+- Modelagem da fila, idempotência por destino, ledger, retry e bloqueios de segurança.
+- Integração preparada para APIs oficiais de Meta, LinkedIn e X, com IA assistiva que só gera rascunho.
+- Sanitização dos exports, documentação de setup e validação contínua no GitHub Actions.
+
+## Interface de operação
 
 <p align="center">
-  <img src="docs/assets/screenshots/01-biblioteca-visual.png" alt="Biblioteca visual com cards, filtros, estados e destinos de publicação" width="100%" />
+  <img src="docs/assets/screenshots/01-biblioteca-visual.png" alt="Biblioteca visual de conteúdos, busca, filtros e cards de aprovação" width="100%" />
 </p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/02-editor-de-publicacao.png" alt="Editor de carrossel com prévia de slides, legenda, redes, status e histórico" width="49%" />
-  <img src="docs/assets/screenshots/03-postagem-rapida.png" alt="Modal de postagem rápida com upload, ordem de imagens e legenda" width="49%" />
+  <img src="docs/assets/screenshots/02-editor-de-publicacao.png" alt="Editor com prévia do carrossel, legenda, destinos e decisão" width="49%" />
+  <img src="docs/assets/screenshots/03-postagem-rapida.png" alt="Postagem rápida com upload, prévia e definição de ordem" width="49%" />
 </p>
 
-As telas acima foram geradas a partir do mesmo template usado pelo portal, usando uma biblioteca demonstrativa anônima. A [demo estática](docs/demo/index.html) e seus assets vivem no repositório para que a interface possa ser revisada sem acesso à infraestrutura interna.
+As telas são uma demonstração estática anônima, gerada a partir do template do portal e disponível em [docs/demo/index.html](docs/demo/index.html). Ela permite avaliar o fluxo visual sem expor dados internos ou precisar de acesso à infraestrutura.
 
-## Workflows n8n — canvas e responsabilidades
+## Workflows n8n reais — canvas e responsabilidades
 
-Além da interface, a automação foi construída como workflows pequenos e verificáveis. Os canvases abaixo reproduzem os nós, versões e responsabilidades dos exports sanitizados; foram redesenhados para o portfólio sem nomes de clientes, URLs internas, credenciais ou dados de execução.
+As imagens desta seção são **capturas do editor real do n8n**, feitas na instância local em execução em **15/07/2026**. Não são diagramas ilustrados nem mockups recriados. Elas foram enquadradas somente para não exibir navegação periférica; não há credencial, token, ID de conta nem dado de cliente visível.
 
 <p align="center">
-  <img src="docs/assets/workflows/01-portal-visual-n8n.svg" alt="Canvas n8n do workflow publicado Portal Visual: Webhook, Code e Respond to Webhook" width="100%" />
+  <img src="docs/assets/n8n-real/05-portal-acoes-ia-real.png" alt="Canvas real do n8n com a entrada do Portal, roteador de ação e blocos de IA com fallback" width="100%" />
 </p>
 
 <p align="center">
-  <img src="docs/assets/workflows/02-fila-e-roteador-n8n.svg" alt="Canvas n8n do orquestrador: IA nativa com fallback, fila, Data Table, Meta, LinkedIn, X e histórico" width="100%" />
+  <img src="docs/assets/n8n-real/05-portal-acoes-fila-real.png" alt="Canvas real do n8n com scheduler, Data Table, elegibilidade, reserva e roteador por rede" width="100%" />
 </p>
 
-O primeiro fluxo está **publicado** no ambiente operacional e responde o portal. O segundo representa o workflow operacional `Portal: Ações`: ele já contém a publicação multicanal, mas a trava global começa desligada. Credenciais, IDs de contas e mídia pública precisam ser homologados antes de `SOCIAL_PUBLISH_ENABLED=true`. Essa distinção faz parte da segurança do projeto — aprovação não dispara postagem externa por acidente.
+| Workflow mantido | Gatilho | Responsabilidade verificável |
+|---|---|---|
+| `04 · Portal visual` | Webhook `GET` | Lê a biblioteca e entrega a central de revisão, filtros, modais e upload rápido. |
+| `05 · Portal: ações` | Webhook `POST` + agenda | Persiste decisões, produz rascunhos com IA, reserva entregas, aplica retry, registra resultado e contém as rotas de publicação. |
+| `06 · Portal: arquivos` | Webhook `GET` | Serve somente mídia vinculada ao conteúdo solicitado; valida item/nome e suporta URL assinada quando exposto publicamente. |
 
-## O problema que resolvi
+O workflow `Portal: Ações` tem **53 nós**. Ele está dividido no próprio canvas em quatro blocos legíveis: **Portal e IA**, **Fila protegida**, **APIs oficiais** e **Resultado por entrega**. A captura de [evidências técnicas](docs/evidence.md) reúne os três canvases reais e explica o recorte de cada um.
 
-Em uma operação de conteúdo técnico B2B, aprovar um carrossel não é apenas enviar uma imagem: envolve ordem dos slides, adequação da legenda, canais de destino, agendamento, responsável e histórico da decisão. O fluxo anterior concentrava isso entre planilha, Google Drive e automações difíceis de auditar.
-
-Este projeto cria uma etapa humana e visual antes de qualquer integração externa:
+## O fluxo de produto
 
 ```mermaid
 flowchart LR
-    A["Biblioteca local\ncarrossel + Texto.txt"] --> C["Central visual\nno n8n"]
+    A["Biblioteca local\ncarrossel + Texto.txt"] --> C["Portal visual\nno n8n"]
     B["Postagem rápida\nupload + legenda"] --> C
-    C --> D["Revisar slides\nordenar e editar"]
+    C --> D["Revisar slides\nordenar, editar e escolher redes"]
     D --> E{"Decisão humana"}
     E -->|"Pendente"| C
     E -->|"Aprovado"| F["Fila imediata"]
     E -->|"Agendado"| G["Fila com data/hora"]
     E -->|"Rejeitado"| H["Histórico auditável"]
-    F -. "contas homologadas" .-> I["Publicadores por rede"]
-    G -. "contas homologadas" .-> I
+    F -. "contas homologadas + trava liberada" .-> I["Publicadores por rede"]
+    G -. "contas homologadas + trava liberada" .-> I
     I --> J["Meta · LinkedIn · X thread"]
 ```
 
-## O que eu construí
+## Capacidades implementadas e limites explícitos
 
-| Capacidade | Como funciona |
-|---|---|
-| Biblioteca visual | Descobre pastas com imagens e `Texto.txt`, identifica carrosséis e monta cards pesquisáveis. |
-| Revisão realmente visual | Mostra todos os slides, permite navegação por teclado, edição de título/legenda, seleção de rede e escolha de status. |
-| Ordem controlada | O responsável reorganiza o carrossel antes da aprovação; a alteração é persistida e registrada. |
-| Postagem rápida | Recebe de 1 a 10 imagens por clique ou arrastar/soltar, exibe prévia e permite reorganizar antes de entrar na fila. |
-| IA com fallback real | Usa os nós nativos OpenAI → Gemini → Ollama; cada sugestão fica em rascunho para revisão humana. |
-| Auditoria operacional | Registra operador, data, comentário, destinos e decisão no estado atômico e em uma Data Table nativa do n8n. |
-| Segurança de publicação | Aprovar não publica. A fila reserva uma entrega por rede e a trava global impede chamadas externas antes da homologação. |
-| Desempenho da interface | Carrega cards progressivamente, usa imagens preguiçosas e aplica cache aos assets de prévia. |
+| Camada | Estado no projeto | Observação importante |
+|---|---|---|
+| Biblioteca visual | Implementada | Identifica carrosséis e `Texto.txt`, monta cards pesquisáveis e apresenta estados. |
+| Revisão e aprovação | Implementada | Edita título/legenda, destinos, ordem dos slides, decisão, responsável e comentário. |
+| Postagem rápida | Implementada | Aceita 1 a 10 PNG/JPG/JPEG/WEBP, com prévia e reordenação antes de entrar como pendente. |
+| IA assistiva | Implementada e desligada por variável | OpenAI → Gemini → Ollama gera **rascunho**; nunca altera a legenda sem confirmação humana. |
+| Fila e auditoria | Implementada | Reserva por destino, `dispatchId`, ledger em Data Table e tentativa controlada por entrega. |
+| Publicadores sociais | Implementados e bloqueados até homologação | Rotas para Instagram carrossel, Facebook multi-foto, LinkedIn de Página e X com mídia/thread. Não há alegação de publicação externa concluída neste repositório. |
+| Acesso externo | Fora do escopo do portfólio | A operação atual é de rede local. HTTPS, autenticação e restrição de origem são pré-requisitos para exposição pública. |
+
+Essa separação é intencional: **aprovar não publica**. A publicação só é elegível quando a conta foi homologada, a mídia atende os pré-requisitos da rede e a variável global `SOCIAL_PUBLISH_ENABLED` foi liberada.
 
 ## Decisões de engenharia
 
-### Separação de responsabilidades
+- **Três workflows, não um monólito:** renderização, ações e mídia isoladas reduzem acoplamento e tornam os erros localizáveis.
+- **Fonte de verdade local:** biblioteca e estado do conteúdo não dependem de Google Sheets para a operação diária.
+- **Idempotência e reserva:** cada destino recebe uma chave de entrega antes da chamada externa, evitando duplicação após retry.
+- **APIs por rede:** onde um nó nativo não cobre o caso (carrossel/multiimagem/mídia), o fluxo usa HTTP Request com contrato explícito, em vez de fingir suporte incompleto.
+- **IA com queda controlada:** OpenAI é o primeiro provedor; Gemini e Ollama só entram quando habilitados. Todas as respostas viram rascunho revisável.
+- **Segredos fora do Git:** tokens e OAuth pertencem ao cofre criptografado de credenciais do n8n, nunca a Code nodes, exports ou documentação.
 
-O projeto evita o padrão frágil de um único workflow que gera conteúdo, busca arquivos, publica e tenta recuperar falhas. A arquitetura foi dividida em workflows menores e auditáveis:
-
-| Workflow | Responsabilidade |
-|---|---|
-| `04 · Portal visual` | Renderiza a biblioteca, filtros e modais. |
-| `05 · Portal: ações` | Recebe ações, cria rascunhos de IA, reserva fila, publica nas quatro redes, controla retry e grava o ledger. |
-| `06 · Portal: arquivos` | Entrega apenas imagens pertencentes ao conteúdo solicitado. |
-
-As quatro rotas de publicação fazem parte de `05 · Portal: ações`: Instagram carrossel, Facebook multi-foto, LinkedIn multi-imagem de Página e X com mídia + thread. O export não contém credencial, token nem ID corporativo; o cofre de credenciais e as variáveis do n8n completam a conexão de cada rede.
-
-### Segurança e dados
-
-- Credenciais ficam somente no armazenamento criptografado do n8n; os exports do Git não possuem bloco de credencial.
-- A rota de arquivos valida item e nome antes de ler o volume persistente.
-- Uploads aceitam apenas PNG, JPG/JPEG e WEBP, com limite de 1 a 10 imagens.
-- A interface é adequada à LAN controlada. Para acesso externo, o próximo passo é HTTPS, autenticação e restrição de rede.
-
-## Validação
+## Como valido o projeto
 
 ```powershell
 node scripts/build-portal-workflows.mjs
 node scripts/build-portfolio-demo.mjs
 node scripts/validate-portal-code.mjs
-pwsh -File scripts/validate-workflows.ps1
+pwsh -NoProfile -File scripts/validate-workflows.ps1
 ```
 
-O GitHub Actions valida os exports, impede workflows ativos, bloqueia referências de credenciais e rejeita e-mails reais. A revisão local também confirmou os tipos de nós atuais contra a instalação n8n utilizada e verificou conexões internas sem destinos quebrados. Veja [o benchmark de arquitetura](docs/benchmark.md) para os padrões comparados e as decisões de projeto.
+O GitHub Actions reconstrói os exports mantidos e falha se houver diferença não versionada, JSON inválido, credencial serializada ou e-mail real. A validação local também verifica a política de exports inativos e as referências internas dos workflows.
 
-## Tecnologias e competências demonstradas
+## Tecnologias demonstradas
 
-`n8n` · `Docker` · `JavaScript` · `Node.js` · `Webhooks` · `HTTP APIs` · `OAuth2` · `HTML/CSS responsivo` · `UI/UX operacional` · `Validação de upload` · `Auditoria` · `Idempotência` · `GitHub Actions`
-
-Além da automação, o projeto evidencia decisões de produto: separar aprovação de publicação, reduzir dependência de planilha, oferecer uma tela utilizável para pessoas não técnicas e manter um caminho seguro para evolução de integrações sociais.
+`n8n` · `Docker` · `JavaScript` · `Node.js` · `Webhooks` · `HTTP APIs` · `OAuth2` · `HTML/CSS responsivo` · `UI/UX operacional` · `Data Table` · `Idempotência` · `Retry` · `Auditoria` · `GitHub Actions`
 
 ## Estrutura do repositório
 
 ```text
 portal/       Template da interface operacional
-workflows/    Exports sanitizados e inativos do n8n
+workflows/    Três exports n8n sanitizados e inativos para revisão técnica
 scripts/      Geradores e validadores reproduzíveis
-docs/         Arquitetura, segurança, testes e auditoria do legado
+docs/         Arquitetura, segurança, setup, testes e evidências
 docs/demo/    Demonstração estática anonimizada
-docs/assets/  Capturas reais da demo, canvases n8n sanitizados e slides ilustrativos
+docs/assets/  Capturas da interface e do editor n8n real, sem credenciais
 ```
 
 ## Documentação técnica
 
+- [Evidências visuais dos workflows reais](docs/evidence.md)
 - [Portal e operação diária](docs/portal.md)
 - [Arquitetura](docs/architecture.md)
 - [Configuração e credenciais](docs/setup.md)
 - [Segurança](docs/security.md)
 - [Plano de testes](docs/testing.md)
-- [Migração para nós atuais do n8n](docs/migration.md)
-- [Auditoria dos workflows legados](docs/workflow-audit.md)
+- [Migração e atualização de nós](docs/migration.md)
+- [Decisão de consolidação dos workflows](docs/workflow-audit.md)
 
 ---
 
