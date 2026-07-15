@@ -135,4 +135,4 @@ docs/assets/  Capturas reais da demo, canvases n8n sanitizados e slides ilustrat
 
 ---
 
-Desenvolvido por **Maycon Xavier** como projeto de portfólio de automação, integração de sistemas e experiência operacional para equipes de marketing técnico.
+Desenvolvido por **Mayconxzdev** como projeto de portfólio de automação, integração de sistemas e experiência operacional para equipes de marketing técnico.
