@@ -18,3 +18,6 @@ Fotos-Rede/
 Thumbs.db
 .vscode/
 .idea/
+
+# Artefatos temporários de validação visual. As capturas curadas vivem em docs/assets/screenshots/.
+.playwright-cli/

@@ -1,113 +1,124 @@
 # Postagem Redes
 
-Portal visual de curadoria, aprovação e preparação multicanal de conteúdo, construído no **n8n** para operações de marketing técnico B2B.
+[![Validação dos exports](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml)
 
-O projeto transforma uma biblioteca local de carrosséis em uma fila clara de revisão: a pessoa responsável vê os slides, edita a legenda, escolhe as redes, aprova, agenda ou rejeita. Também pode criar uma postagem rápida enviando imagens e texto diretamente pelo navegador. A publicação externa fica separada da aprovação e só é conectada depois da homologação de cada conta.
+**Projeto autoral de [Maycon Xavier](https://github.com/Mayconxzdev)** — uma central visual construída no n8n para transformar carrosséis técnicos em uma fila clara de revisão, aprovação, agendamento e publicação multicanal.
 
-> **Versão de portfólio.** Os workflows publicados aqui são sanitizados e inativos: não contêm credenciais, tokens, contas, e-mails reais, imagens corporativas, nem dados de execução.
+Em vez de depender de planilhas e passos manuais, quem opera visualiza o conteúdo como ele será publicado, ajusta legenda e destinos, registra a decisão e mantém a rastreabilidade da fila. A publicação externa é uma etapa independente e protegida por homologação de conta.
 
-## Demonstração do fluxo
+> Versão de portfólio segura: workflows inativos, dados fictícios, telas anonimizadas e nenhum token, e-mail corporativo, conta social ou imagem de cliente.
+
+## Produto em uso
+
+<p align="center">
+  <img src="docs/assets/screenshots/01-biblioteca-visual.png" alt="Biblioteca visual com cards, filtros, estados e destinos de publicação" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/02-editor-de-publicacao.png" alt="Editor de carrossel com prévia de slides, legenda, redes, status e histórico" width="49%" />
+  <img src="docs/assets/screenshots/03-postagem-rapida.png" alt="Modal de postagem rápida com upload, ordem de imagens e legenda" width="49%" />
+</p>
+
+As telas acima foram geradas a partir do mesmo template usado pelo portal, usando uma biblioteca demonstrativa anônima. A [demo estática](docs/demo/index.html) e seus assets vivem no repositório para que a interface possa ser revisada sem acesso à infraestrutura interna.
+
+## O problema que resolvi
+
+Em uma operação de conteúdo técnico B2B, aprovar um carrossel não é apenas enviar uma imagem: envolve ordem dos slides, adequação da legenda, canais de destino, agendamento, responsável e histórico da decisão. O fluxo anterior concentrava isso entre planilha, Google Drive e automações difíceis de auditar.
+
+Este projeto cria uma etapa humana e visual antes de qualquer integração externa:
 
 ```mermaid
 flowchart LR
-    A["Biblioteca local\ncarrosséis + Texto.txt"] --> B["Portal visual\nno n8n"]
-    C["Postagem rápida\nimagens + legenda"] --> B
-    B --> D["Revisão humana\nslides, legenda e redes"]
-    D --> E{"Decisão"}
-    E -->|Pendente| B
-    E -->|Aprovado| F["Fila de homologação"]
-    E -->|Agendado| G["Fila com data e hora"]
-    E -->|Rejeitado| H["Histórico da decisão"]
-    F -. "credenciais validadas" .-> I["Publicadores por rede"]
-    G -. "credenciais validadas" .-> I
-    I --> J["Instagram / Facebook\nLinkedIn / X thread"]
+    A["Biblioteca local\ncarrossel + Texto.txt"] --> C["Central visual\nno n8n"]
+    B["Postagem rápida\nupload + legenda"] --> C
+    C --> D["Revisar slides\nordenar e editar"]
+    D --> E{"Decisão humana"}
+    E -->|"Pendente"| C
+    E -->|"Aprovado"| F["Fila imediata"]
+    E -->|"Agendado"| G["Fila com data/hora"]
+    E -->|"Rejeitado"| H["Histórico auditável"]
+    F -. "contas homologadas" .-> I["Publicadores por rede"]
+    G -. "contas homologadas" .-> I
+    I --> J["Meta · LinkedIn · X thread"]
 ```
 
-## O que foi construído
+## O que eu construí
 
-- **Biblioteca visual de conteúdos:** lê pastas locais com imagens e `Texto.txt`, reconhece carrosséis e apresenta cada item em cards pesquisáveis.
-- **Editor visual de carrossel:** exibe todos os slides, permite navegar por botões ou teclado, trocar título/legenda, acompanhar a contagem de caracteres, selecionar redes, definir responsável, comentar a decisão e escolher pendente, aprovado, agendado ou rejeitado.
-- **Ordem controlada de slides:** a pessoa ajusta a sequência antes do envio e pode reorganizar um carrossel já existente; a ordem é persistida na biblioteca e auditada.
-- **Postagem rápida em uma única tela:** o responsável arrasta ou escolhe de 1 a 10 imagens, vê a prévia, remove arquivos, define a ordem, escreve a legenda e envia para aprovação sem criar pasta ou editar planilha.
-- **Rastreabilidade operacional:** cada decisão grava operador, data, comentário, redes escolhidas e estado em um ledger local com escrita atômica.
-- **Separação segura de responsabilidades:** aprovação organiza a fila; nenhum clique no portal publica externamente enquanto as credenciais não forem validadas.
-- **Compatibilidade com o legado:** os workflows históricos de geração por Google Drive/Sheets, IA, retry e alerta de erro permanecem exportados para estudo e evolução, sem acoplamento obrigatório ao portal.
-
-## Arquitetura
-
-| Camada | Responsabilidade | Implementação |
-|---|---|---|
-| Biblioteca | Descobrir carrosséis e legenda | Pastas locais persistentes montadas no container Docker |
-| Portal | Exibir, filtrar e receber decisões | Webhook `GET` do n8n que entrega uma interface HTML responsiva |
-| Arquivos | Servir somente os slides pertencentes ao item | Webhook `GET` com validação de identificador e nome de arquivo |
-| Ações | Gravar aprovação e receber envio rápido | Webhook `POST` com validação de dados e arquivo |
-| Estado | Manter status e auditoria | JSON local com arquivo temporário + lock de escrita |
-| Publicadores | Enviar para as redes após homologação | Evolução dos workflows de integração por plataforma |
-
-Os exports do portal e da publicação atualizada são complementares aos três workflows legados:
-
-| Workflow | Papel |
+| Capacidade | Como funciona |
 |---|---|
-| `04-portal-visual.sanitized.json` | Entrega o painel de aprovação e a biblioteca de conteúdo. |
-| `05-portal-acoes.sanitized.json` | Recebe decisões e postagens rápidas, valida e registra o histórico. |
-| `06-portal-arquivos.sanitized.json` | Serve imagens de forma restrita para a prévia visual. |
-| `07-fila-e-roteador.sanitized.json` | Lê somente itens aprovados/agendados, divide por rede e concentra a idempotência. |
-| `08-meta-instagram-facebook.sanitized.json` | Estrutura atual de carrossel Meta com validação obrigatória e chamadas Graph API visíveis. |
-| `09-linkedin-empresa.sanitized.json` | Estrutura de publicação multi-imagem na Página da empresa; preserva o nó nativo apenas como alternativa de uma imagem. |
-| `10-x-thread.sanitized.json` | Adapta a legenda para uma thread e separa upload de mídia da criação/resposta dos posts. |
-| `11-monitoramento-alerta.sanitized.json` | Sanitiza falhas e envia alerta operacional por SMTP, sem vazar segredos. |
-| `01` a `03` | Preservam a arquitetura legada de orquestração, alertas e retentativas. |
+| Biblioteca visual | Descobre pastas com imagens e `Texto.txt`, identifica carrosséis e monta cards pesquisáveis. |
+| Revisão realmente visual | Mostra todos os slides, permite navegação por teclado, edição de título/legenda, seleção de rede e escolha de status. |
+| Ordem controlada | O responsável reorganiza o carrossel antes da aprovação; a alteração é persistida e registrada. |
+| Postagem rápida | Recebe de 1 a 10 imagens por clique ou arrastar/soltar, exibe prévia e permite reorganizar antes de entrar na fila. |
+| Auditoria operacional | Registra operador, data, comentário, destinos e decisão em um ledger local com escrita atômica. |
+| Segurança de publicação | Aprovar não publica. Somente conteúdos aprovados/agendados podem seguir para os publicadores depois da homologação das contas. |
+| Desempenho da interface | Carrega cards progressivamente, usa imagens preguiçosas e aplica cache aos assets de prévia. |
 
-## Jornada de uso
+## Decisões de engenharia
 
-1. Coloque um novo carrossel em uma subpasta da biblioteca, com imagens PNG/JPG/WEBP e `Texto.txt`; ou use **Criar publicação** no portal.
-2. Abra o atalho corporativo do portal, pesquise o conteúdo e clique em **Abrir editor**.
-3. Navegue pelos slides, ajuste a legenda, selecione as redes e informe o responsável.
-4. Aprove imediatamente, agende ou rejeite com um comentário.
-5. Quando todas as contas estiverem homologadas, o publicador usará somente os itens aprovados/agendados e gravará o ID/permalink por rede.
+### Separação de responsabilidades
 
-Consulte o guia detalhado em [docs/portal.md](docs/portal.md).
+O projeto evita o padrão frágil de um único workflow que gera conteúdo, busca arquivos, publica e tenta recuperar falhas. A arquitetura foi dividida em workflows menores e auditáveis:
 
-## Estado atual e segurança
+| Workflow | Responsabilidade |
+|---|---|
+| `04 · Portal visual` | Renderiza a biblioteca, filtros e modais. |
+| `05 · Portal: ações` | Valida decisões, uploads, ordem dos slides e escreve o ledger. |
+| `06 · Portal: arquivos` | Entrega apenas imagens pertencentes ao conteúdo solicitado. |
+| `07 · Fila e roteador` | Seleciona itens aprovados/agendados e divide por rede. |
+| `08 · Meta` | Prepara o fluxo de carrossel Instagram/Facebook. |
+| `09 · LinkedIn Empresa` | Estrutura publicação multi-imagem da Página corporativa. |
+| `10 · X thread` | Adapta legenda em sequência e encadeia posts. |
+| `11 · Monitoramento` | Sanitiza falhas e encaminha alertas SMTP. |
 
-O portal está pronto para operação de **homologação**: organiza conteúdo e registra decisões. Os cinco workflows de publicação atualizados também estão disponíveis como rascunhos inativos, mas deliberadamente param antes de chamadas externas enquanto OAuth, IDs de conta, acesso HTTPS às mídias e testes de cada plataforma não forem validados.
+Os publicadores de redes estão incluídos como **rascunhos inativos**, prontos para receber OAuth e IDs no n8n. Essa separação é intencional: demonstra uma operação segura sem simular uma publicação que ainda não foi homologada.
 
-Foi escolhido acesso sem login para facilitar o uso em computadores autorizados da rede local. Consequentemente, qualquer dispositivo que alcance a URL do portal pode alterar a fila. A mitigação atual é o registro obrigatório do operador; antes de expor além da LAN, implemente autenticação, HTTPS e controle de acesso de rede. Veja [docs/security.md](docs/security.md).
+### Segurança e dados
 
-## Como validar os exports
+- Credenciais ficam somente no armazenamento criptografado do n8n; os exports do Git não possuem bloco de credencial.
+- A rota de arquivos valida item e nome antes de ler o volume persistente.
+- Uploads aceitam apenas PNG, JPG/JPEG e WEBP, com limite de 1 a 10 imagens.
+- A interface é adequada à LAN controlada. Para acesso externo, o próximo passo é HTTPS, autenticação e restrição de rede.
+
+## Validação
 
 ```powershell
 node scripts/build-portal-workflows.mjs
+node scripts/build-publisher-workflows.mjs
+node scripts/build-portfolio-demo.mjs
 node scripts/validate-portal-code.mjs
 pwsh -File scripts/validate-workflows.ps1
 ```
 
-O GitHub Actions executa validação de JSON, garante que os exports permaneçam inativos, rejeita blocos de credenciais e impede e-mails reais no material de portfólio.
+O GitHub Actions valida os exports, impede workflows ativos, bloqueia referências de credenciais e rejeita e-mails reais. A revisão local também confirmou os tipos de nós dos workflows modernos contra a instalação n8n utilizada e verificou conexões internas sem destinos quebrados.
 
-## Atalho Windows com ícone próprio
+## Tecnologias e competências demonstradas
 
-O projeto inclui um instalador de atalho `.lnk` com ícone próprio, sem depender do ícone genérico de atalhos de internet:
+`n8n` · `Docker` · `JavaScript` · `Node.js` · `Webhooks` · `HTTP APIs` · `OAuth2` · `HTML/CSS responsivo` · `UI/UX operacional` · `Validação de upload` · `Auditoria` · `Idempotência` · `GitHub Actions`
 
-```powershell
-pwsh -File scripts/install-postagem-redes-shortcut.ps1 -PortalUrl 'http://<servidor-n8n>:5678/webhook/postagem-redes'
+Além da automação, o projeto evidencia decisões de produto: separar aprovação de publicação, reduzir dependência de planilha, oferecer uma tela utilizável para pessoas não técnicas e manter um caminho seguro para evolução de integrações sociais.
+
+## Estrutura do repositório
+
+```text
+portal/       Template da interface operacional
+workflows/    Exports sanitizados e inativos do n8n
+scripts/      Geradores e validadores reproduzíveis
+docs/         Arquitetura, segurança, testes e auditoria do legado
+docs/demo/    Demonstração estática anonimizada
+docs/assets/  Capturas reais da demo e slides ilustrativos
 ```
 
-O script cria o ícone em `%LOCALAPPDATA%\Vesper\PostagemRedes` e adiciona **Postagem Redes.lnk** à Área de Trabalho do usuário atual. Em cada computador da empresa, execute o mesmo comando apontando para o servidor n8n interno.
-
-## Documentação
+## Documentação técnica
 
 - [Portal e operação diária](docs/portal.md)
 - [Arquitetura](docs/architecture.md)
 - [Configuração e credenciais](docs/setup.md)
 - [Segurança](docs/security.md)
 - [Plano de testes](docs/testing.md)
-- [Notas de migração](docs/migration.md)
-- [Auditoria dos nós legados e substituições](docs/workflow-audit.md)
+- [Migração para nós atuais do n8n](docs/migration.md)
+- [Auditoria dos workflows legados](docs/workflow-audit.md)
 
-## Tecnologias
+---
 
-`n8n` · `Docker` · `JavaScript` · `Node.js` · `Webhooks` · `Google Drive` · `Google Sheets` · `Gemini` · `OpenAI` · `Ollama` · `Meta Graph API` · `LinkedIn API` · `X API` · `SMTP`
-
-## Autor
-
-Desenvolvido por [Maycon Xavier](https://github.com/Mayconxzdev) como projeto de automação de conteúdo, interface operacional e publicação multicanal.
+Desenvolvido por **Maycon Xavier** como projeto de portfólio de automação, integração de sistemas e experiência operacional para equipes de marketing técnico.
