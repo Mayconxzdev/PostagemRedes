@@ -44,13 +44,18 @@ flowchart LR
 | Estado | Manter status e auditoria | JSON local com arquivo temporário + lock de escrita |
 | Publicadores | Enviar para as redes após homologação | Evolução dos workflows de integração por plataforma |
 
-Os três novos exports do portal são complementares aos três workflows legados:
+Os exports do portal e da publicação atualizada são complementares aos três workflows legados:
 
 | Workflow | Papel |
 |---|---|
 | `04-portal-visual.sanitized.json` | Entrega o painel de aprovação e a biblioteca de conteúdo. |
 | `05-portal-acoes.sanitized.json` | Recebe decisões e postagens rápidas, valida e registra o histórico. |
 | `06-portal-arquivos.sanitized.json` | Serve imagens de forma restrita para a prévia visual. |
+| `07-fila-e-roteador.sanitized.json` | Lê somente itens aprovados/agendados, divide por rede e concentra a idempotência. |
+| `08-meta-instagram-facebook.sanitized.json` | Estrutura atual de carrossel Meta com validação obrigatória e chamadas Graph API visíveis. |
+| `09-linkedin-empresa.sanitized.json` | Estrutura de publicação multi-imagem na Página da empresa; preserva o nó nativo apenas como alternativa de uma imagem. |
+| `10-x-thread.sanitized.json` | Adapta a legenda para uma thread e separa upload de mídia da criação/resposta dos posts. |
+| `11-monitoramento-alerta.sanitized.json` | Sanitiza falhas e envia alerta operacional por SMTP, sem vazar segredos. |
 | `01` a `03` | Preservam a arquitetura legada de orquestração, alertas e retentativas. |
 
 ## Jornada de uso
@@ -65,7 +70,7 @@ Consulte o guia detalhado em [docs/portal.md](docs/portal.md).
 
 ## Estado atual e segurança
 
-O portal está pronto para operação de **homologação**: organiza conteúdo e registra decisões, mas não aciona Instagram, Facebook, LinkedIn ou X. Isto evita publicação indevida enquanto OAuth, permissões e limites de cada conta ainda são verificados.
+O portal está pronto para operação de **homologação**: organiza conteúdo e registra decisões. Os cinco workflows de publicação atualizados também estão disponíveis como rascunhos inativos, mas deliberadamente param antes de chamadas externas enquanto OAuth, IDs de conta, acesso HTTPS às mídias e testes de cada plataforma não forem validados.
 
 Foi escolhido acesso sem login para facilitar o uso em computadores autorizados da rede local. Consequentemente, qualquer dispositivo que alcance a URL do portal pode alterar a fila. A mitigação atual é o registro obrigatório do operador; antes de expor além da LAN, implemente autenticação, HTTPS e controle de acesso de rede. Veja [docs/security.md](docs/security.md).
 
@@ -97,6 +102,7 @@ O script cria o ícone em `%LOCALAPPDATA%\Vesper\PostagemRedes` e adiciona **Pos
 - [Segurança](docs/security.md)
 - [Plano de testes](docs/testing.md)
 - [Notas de migração](docs/migration.md)
+- [Auditoria dos nós legados e substituições](docs/workflow-audit.md)
 
 ## Tecnologias
 

@@ -10,6 +10,14 @@
 - Reorganização de slides já enviados com persistência no sistema de arquivos e auditoria da ação.
 - Limpeza do estado de validação para iniciar a operação sem histórico técnico fictício.
 
+## Validação estrutural dos publicadores atualizados
+
+- Os exports `07` a `11` permanecem com `active: false` e não contêm referências de credenciais, e-mails reais ou tokens.
+- Cada tipo de nó presente nos exports foi conferido contra os tipos disponíveis na instância local n8n 2.27.3.
+- As conexões de cada workflow foram validadas para garantir que toda origem e destino referenciem um nó existente no mesmo canvas.
+- Os cinco workflows foram importados como rascunhos inativos: fila/roteador, Meta, LinkedIn, X e monitoramento.
+- Não houve execução de API social, publicação, criação de credencial ou alteração dos workflows do Mala Direta nesta validação.
+
 ## Roteiro de homologação operacional
 
 1. **Acesso LAN:** abrir o atalho em dois computadores autorizados e confirmar que a biblioteca carrega.

@@ -1,0 +1,157 @@
+{
+  "name": "Postagem Redes — 11 — Monitoramento e alerta (CONFIGURAR)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": null,
+  "meta": null,
+  "pinData": {},
+  "nodes": [
+    {
+      "id": "observabilidade-antes-da-produ-o",
+      "name": "Observabilidade antes da produção",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "parameters": {
+        "content": "## Alerta seguro\n\nEste workflow recebe falhas dos publicadores, remove campos sensíveis e manda um aviso operacional.\n\nConecte uma credencial SMTP dedicada no editor. Configure cada workflow publicador para usar este workflow como Error Workflow depois do teste manual.\n\nNão inclua token, cabeçalho Authorization, corpo bruto de API ou dados pessoais no alerta.",
+        "height": 250,
+        "width": 510,
+        "color": 6
+      },
+      "position": [
+        -560,
+        -260
+      ]
+    },
+    {
+      "id": "erro-de-outro-workflow",
+      "name": "Erro de outro workflow",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "parameters": {},
+      "position": [
+        -500,
+        40
+      ]
+    },
+    {
+      "id": "teste-manual",
+      "name": "Teste manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "parameters": {},
+      "position": [
+        -500,
+        160
+      ]
+    },
+    {
+      "id": "sanitizar-ocorr-ncia",
+      "name": "Sanitizar ocorrência",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "const source = $json.execution || $json;\nconst message = String(source.error?.message || source.error?.description || 'Falha sem detalhe.').replace(/(authorization|bearer|token|secret|client_secret)\\s*[:=]\\s*[^\\s,]+/gi, '$1=[redigido]');\nreturn [{ json: { workflow: source.workflow?.name || 'Publicador', executionId: source.id || '', message, occurredAt: new Date().toISOString() } }];"
+      },
+      "position": [
+        -250,
+        90
+      ]
+    },
+    {
+      "id": "enviar-alerta-smtp",
+      "name": "Enviar alerta SMTP",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "parameters": {
+        "fromEmail": "",
+        "toEmail": "",
+        "subject": "=[Postagem Redes] Falha em {{ $json.workflow }}",
+        "emailFormat": "text",
+        "text": "=Workflow: {{ $json.workflow }}\nExecução: {{ $json.executionId }}\nData: {{ $json.occurredAt }}\nResumo: {{ $json.message }}",
+        "options": {}
+      },
+      "position": [
+        30,
+        90
+      ]
+    },
+    {
+      "id": "registrar-alerta-no-ledger",
+      "name": "Registrar alerta no ledger",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Futuro: persistir uma entrada de falha no state.json ou PostgreSQL, sem segredos.\nreturn items;"
+      },
+      "position": [
+        300,
+        90
+      ]
+    },
+    {
+      "id": "crit-rio-de-ativa-o",
+      "name": "Critério de ativação",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "parameters": {
+        "content": "## Só ative depois de\n\n1. Testar uma publicação manual de cada rede.\n2. Confirmar que o alerta chega sem expor segredo.\n3. Registrar ID e permalink de retorno no ledger.\n4. Definir limite de tentativas e regra de retomar sem duplicar publicação.",
+        "height": 205,
+        "width": 420,
+        "color": 6
+      },
+      "position": [
+        240,
+        -200
+      ]
+    }
+  ],
+  "connections": {
+    "Erro de outro workflow": {
+      "main": [
+        [
+          {
+            "node": "Sanitizar ocorrência",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Teste manual": {
+      "main": [
+        [
+          {
+            "node": "Sanitizar ocorrência",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sanitizar ocorrência": {
+      "main": [
+        [
+          {
+            "node": "Enviar alerta SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar alerta SMTP": {
+      "main": [
+        [
+          {
+            "node": "Registrar alerta no ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

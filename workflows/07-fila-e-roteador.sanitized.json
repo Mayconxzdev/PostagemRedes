@@ -1,0 +1,323 @@
+{
+  "name": "Postagem Redes — 07 — Fila e roteador (CONFIGURAR)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": null,
+  "meta": null,
+  "pinData": {},
+  "nodes": [
+    {
+      "id": "leia-antes-de-ativar",
+      "name": "Leia antes de ativar",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "parameters": {
+        "content": "## Fila de publicação — desenho atualizado\n\nEste workflow substitui o agendamento de planilha/Google Drive como fonte de publicação.\n\n**Só consome:** itens com status `aprovado` ou `agendado` no horário devido.\n\n**Antes de ativar:** importe e configure os workflows 08, 09, 10 e 11; valide uma rede por vez; mantenha o legado inativo.",
+        "height": 260,
+        "width": 470,
+        "color": 6
+      },
+      "position": [
+        -620,
+        -280
+      ]
+    },
+    {
+      "id": "teste-manual",
+      "name": "Teste manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "parameters": {},
+      "position": [
+        -600,
+        40
+      ]
+    },
+    {
+      "id": "agendamento-a-cada-5-minutos",
+      "name": "Agendamento a cada 5 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "position": [
+        -600,
+        150
+      ]
+    },
+    {
+      "id": "ler-fila-aprovada-e-agendada",
+      "name": "Ler fila aprovada e agendada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst statePath = '/files/postagem-redes/state.json';\nconst now = new Date();\nlet state = { records: {} };\ntry { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch { /* biblioteca ainda vazia */ }\nconst records = Object.entries(state.records || {}).map(([contentId, value]) => ({ contentId, ...value }));\nreturn records\n  .filter(item => item.status === 'aprovado' || (item.status === 'agendado' && item.scheduleAt && new Date(item.scheduleAt) <= now))\n  .filter(item => Array.isArray(item.networks) && item.networks.length)\n  .map(item => ({ json: { ...item, idempotencyKey: `${item.contentId}:${item.updatedAt || 'novo'}` } }));"
+      },
+      "position": [
+        -320,
+        90
+      ]
+    },
+    {
+      "id": "loop-por-conte-do",
+      "name": "Loop por conteúdo",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "position": [
+        -70,
+        90
+      ]
+    },
+    {
+      "id": "separar-uma-execu-o-por-rede",
+      "name": "Separar uma execução por rede",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "const item = $json;\nreturn (item.networks || []).map(network => ({ json: { ...item, network, idempotencyKey: `${item.idempotencyKey}:${network}` } }));"
+      },
+      "position": [
+        160,
+        90
+      ]
+    },
+    {
+      "id": "roteador-por-rede",
+      "name": "Roteador por rede",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.network }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Meta / Instagram"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.network }}",
+                    "rightValue": "facebook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Meta / Facebook"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.network }}",
+                    "rightValue": "linkedin",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "LinkedIn"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.network }}",
+                    "rightValue": "x",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "X / thread"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none",
+          "ignoreCase": false
+        }
+      },
+      "position": [
+        400,
+        90
+      ]
+    },
+    {
+      "id": "registrar-in-cio-com-idempot-ncia",
+      "name": "Registrar início com idempotência",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Ponto único para, na fase de ativação, gravar publishing/published/failed no ledger.\n// Nunca marque como publicado antes de receber o ID remoto da plataforma.\nreturn items;"
+      },
+      "position": [
+        670,
+        90
+      ]
+    },
+    {
+      "id": "acessos-que-ser-o-ligados",
+      "name": "Acessos que serão ligados",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "parameters": {
+        "content": "## Checklist\n\n- **Meta**: OAuth2 da aplicação, ID da Página, ID da conta profissional do Instagram e URL pública HTTPS para as mídias.\n- **LinkedIn**: Community Management OAuth2 e URN da empresa.\n- **X**: OAuth2 com permissão de leitura/escrita e acesso à mídia.\n- **Alerta**: SMTP dedicado para falhas.\n\nOs nós abaixo são apenas o roteamento. Os publicadores ficam separados para evitar uma falha em uma rede bloquear as outras.",
+        "height": 260,
+        "width": 510,
+        "color": 6
+      },
+      "position": [
+        560,
+        -280
+      ]
+    }
+  ],
+  "connections": {
+    "Teste manual": {
+      "main": [
+        [
+          {
+            "node": "Ler fila aprovada e agendada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendamento a cada 5 minutos": {
+      "main": [
+        [
+          {
+            "node": "Ler fila aprovada e agendada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler fila aprovada e agendada": {
+      "main": [
+        [
+          {
+            "node": "Loop por conteúdo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop por conteúdo": {
+      "main": [
+        [
+          {
+            "node": "Separar uma execução por rede",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separar uma execução por rede": {
+      "main": [
+        [
+          {
+            "node": "Roteador por rede",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Roteador por rede": {
+      "main": [
+        [
+          {
+            "node": "Registrar início com idempotência",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar início com idempotência",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar início com idempotência",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar início com idempotência",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

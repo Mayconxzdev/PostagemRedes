@@ -43,17 +43,38 @@ No painel, clique em **Nova postagem rápida**, informe o nome do responsável, 
 
 O portal de aprovação não exige credenciais sociais. Elas só são necessárias ao conectar o publicador real, depois da homologação:
 
-| Serviço | Uso futuro | Ação necessária |
-|---|---|---|
-| Meta Graph API | Facebook e Instagram Business | Conectar página, Instagram Business e permissões de publicação. |
-| LinkedIn | Publicação por perfil/página | Conectar cada conta que poderá publicar e validar multi-imagem. |
-| X | Upload de mídia e thread | Criar OAuth com permissões compatíveis com mídia e posts. |
-| SMTP | Alertas operacionais | Criar credencial com remetente autorizado. |
+| Serviço | Workflow | Acesso que deve ser criado no n8n | Dados não secretos que ainda precisam ser preenchidos |
+|---|---|---|---|
+| Meta Graph API | `08 — Meta Instagram e Facebook` | OAuth2 exclusivo da aplicação Meta, com permissões de publicação mínimas | ID da Página, ID da conta profissional do Instagram, versão Graph API e base HTTPS pública das mídias. |
+| LinkedIn | `09 — LinkedIn Empresa` | **LinkedIn Community Management OAuth2** para a Página da empresa | URN/ID da organização e versão atual da API LinkedIn. |
+| X | `10 — X thread` | OAuth2 da aplicação X com leitura/escrita e escopo de mídia | Nenhum segredo no canvas; somente configuração de thread, mídia e IDs retornados. |
+| SMTP | `11 — Monitoramento e alerta` | SMTP dedicado para falhas operacionais | Remetente autorizado e caixa/grupo que receberá os avisos. |
 | Google Drive / Sheets | Integração legada opcional | Conectar OAuth somente se o fluxo legado voltar a ser usado. |
 | Gemini / OpenAI / Ollama | Geração assistida legada opcional | Criar/validar credenciais e modelo apenas para automação de conteúdo. |
 
 Crie segredos exclusivamente nas credenciais criptografadas do n8n; nunca edite exports de portfólio ou arquivos versionados para inserir tokens.
 
+### Ordem segura de configuração
+
+1. Abra `08`, `09`, `10` e `11` no n8n. Eles foram importados como **inativos** e trazem notas amarelas com o papel de cada nó.
+2. Conecte uma única plataforma de teste por vez, no campo de autenticação do próprio nó. Não cole segredos nos campos de expressão ou Code.
+3. Preencha IDs de Página/organização e URL pública HTTPS somente no ambiente n8n. Para Meta, a mídia precisa ser acessível externamente; o endereço interno `http://192.168.254.3:5678` não serve para a plataforma baixar imagens.
+4. Execute o `Teste manual` daquele workflow com conteúdo de teste. Confirme o retorno de ID/permalink e depois configure o alerta de erro.
+5. Somente após cada rede passar no teste, complete a persistência de `published`, ID e permalink no ledger e habilite a rota correspondente no `07 — Fila e roteador`.
+6. O agendamento de cinco minutos do `07` só deve ser ativado quando todas as redes pretendidas estiverem homologadas e a idempotência estiver validada.
+
+### O que você deve fornecer, sem segredo
+
+Para eu terminar a ligação real quando você estiver pronto, envie apenas estas informações públicas/operacionais:
+
+- URL da Página do Facebook e URL do perfil profissional do Instagram conectado a ela;
+- URL da Página da empresa no LinkedIn;
+- @usuário/URL da conta X;
+- domínio público HTTPS que será usado para entregar as imagens à Meta e ao LinkedIn;
+- endereço do grupo/caixa que deve receber alertas (se preferir, configure-o manualmente no SMTP do n8n).
+
+Não envie senhas, tokens, client secret, bearer token, cookie de sessão ou chave privada por chat. Se algum segredo já foi exposto, revogue-o e crie outro antes de configurar o n8n.
+
 ## Migração dos workflows legados
 
-Os exports `01` a `03` continuam disponíveis para estudo e futura integração. Importe-os desativados, associe o workflow de erro ao orquestrador e valide cada serviço em ambiente de teste. Não ative publicação automática, agendamentos legados ou webhooks de publicação até terminar [docs/testing.md](testing.md).
+Os exports `01` a `03` continuam disponíveis para estudo e futura integração. Os exports `07` a `11` substituem a parte de publicação e monitoramento, mas também devem permanecer desativados até concluir [docs/testing.md](testing.md). Não ative publicação automática, agendamentos legados ou webhooks de publicação do `03`.

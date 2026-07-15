@@ -11,9 +11,20 @@ A versão legada concentrava seleção em Google Drive/Sheets, geração e publi
 - ledger de decisão com operador, horário, comentário e redes;
 - nenhum conector de rede é chamado por aprovação nesta etapa.
 
+Na revisão de 15/07/2026, a instância local em uso estava em n8n 2.27.3 e expunha 896 tipos de nós. Foram adicionados cinco workflows **inativos** de publicação e monitoramento, todos usando versões atuais dos nós instalados:
+
+- `Schedule Trigger` 1.3 e `Loop Over Items (Split in Batches)` 3 para fila controlada;
+- `Switch` 3.4 e `If` 2.3 para roteamento e pré-validação;
+- `HTTP Request` 4.4 para endpoints oficiais que o n8n não abstrai por completo;
+- `X (Formerly Twitter)` 2 para post inicial e respostas encadeadas;
+- `LinkedIn` 1 como alternativa nativa de uma imagem, com Posts API multiimagem em HTTP Request;
+- `Send Email` 2.1 e `Error Trigger` para monitoramento.
+
+Nenhum workflow novo foi ativado nessa etapa. A atualização é estrutural: deixa o canvas moderno, auditável e pronto para conectar acessos sem mudar o comportamento do portal nem do Mala Direta.
+
 ## Compatibilidade com workflows legados
 
-Os workflows de orquestração, alerta de erros e retry permanecem isolados e inativos no export de portfólio. Não foram apagados porque documentam uma arquitetura complementar: geração assistida por IA, armazenamento externo, tratamento de falhas e retentativas.
+Os workflows de orquestração, alerta de erros e retry permanecem isolados e inativos no export de portfólio. Não foram apagados porque documentam uma arquitetura complementar: geração assistida por IA, armazenamento externo, tratamento de falhas e retentativas. Consulte o inventário em [workflow-audit.md](workflow-audit.md) antes de reutilizar qualquer trecho deles.
 
 O portal não exige Google Drive ou Google Sheets para a operação diária. Quando necessário, o orquestrador legado pode ser evoluído para criar rascunhos diretamente na fila visual, em vez de publicar ao concluir a geração.
 
@@ -28,8 +39,7 @@ O portal não exige Google Drive ou Google Sheets para a operação diária. Qua
 
 ## Próxima evolução recomendada
 
-1. Implementar um workflow agendador que consome somente `agendado` na hora correta.
-2. Implementar publicadores por plataforma, cada um com idempotência, observabilidade e retorno de permalink.
-3. Adaptar X como uma thread, não como cópia integral da legenda de carrossel.
-4. Migrar o estado para banco quando a quantidade de campanhas ou usuários justificar.
-5. Adicionar autenticação/HTTPS antes de abrir o portal fora da LAN.
+1. Conectar uma rede de teste por vez nos workflows `08` a `10` e registrar IDs/permalinks no ledger.
+2. Completar a etapa de idempotência persistente e retorno de permalink em cada publicador antes de ativar o `07`.
+3. Migrar o estado para banco quando a quantidade de campanhas ou usuários justificar.
+4. Adicionar autenticação/HTTPS antes de abrir o portal fora da LAN.
