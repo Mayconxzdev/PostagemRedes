@@ -3,7 +3,10 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const template = readFileSync(resolve(root, 'portal', 'portal-template.html'), 'utf8');
+// Keep the generated JSON byte-stable on Windows and Linux. Without this,
+// the embedded HTML inherited the checkout's line endings and CI rebuilt a
+// different export from the exact same source.
+const template = readFileSync(resolve(root, 'portal', 'portal-template.html'), 'utf8').replace(/\r\n?/g, '\n');
 const output = resolve(root, 'workflows');
 mkdirSync(output, { recursive: true });
 
