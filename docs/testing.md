@@ -12,7 +12,7 @@
 
 ## Validação estrutural do orquestrador atualizado
 
-- O export `05 · Portal: Ações` contém 49 nós e permanece sem credenciais, e-mails reais ou tokens.
+- O export `05 · Portal: Ações` contém 53 nós, incluindo quatro notas de documentação visual, e permanece sem credenciais, e-mails reais ou tokens.
 - Os nós atuais OpenAI, Gemini, Ollama, Schedule Trigger, Loop, Data Table, Read/Write File e X v2 foram conferidos contra a instância local n8n 2.27.3.
 - As conexões do orquestrador foram verificadas localmente para garantir origem/destino existentes e nomes únicos.
 - A Data Table de Ledger é criada com `createIfNotExists`, sem depender de planilha ou banco externo.

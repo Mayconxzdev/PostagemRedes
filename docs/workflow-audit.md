@@ -16,7 +16,7 @@ A lista da instância foi confrontada com status de publicação, histórico de 
 | `Mala Direta Vesper — Tratamento de Erros (Ativo)` | Recebe e registra falhas do workflow principal. | `Error Trigger` associado ao workflow principal. |
 | `Postagem Redes — Portal Visual` | Entrega a biblioteca visual. | Webhook GET publicado, com execuções de sucesso recentes. |
 | `Postagem Redes — Portal: Arquivos` | Entrega mídias autorizadas ao portal. | Webhook publicado, com execuções de sucesso recentes. |
-| `Postagem Redes — Portal: Ações` | Persiste decisão, IA com fallback, fila, publicação por rede, retry e Ledger. | 49 nós; Webhook + agendamento ativos; rotas Meta, LinkedIn e X bloqueadas até a homologação por variável. |
+| `Postagem Redes — Portal: Ações` | Persiste decisão, IA com fallback, fila, publicação por rede, retry e Ledger. | 53 nós; Webhook + agendamento ativos; quatro notas organizam visualmente Portal/IA, Fila, APIs e Resultado; rotas Meta, LinkedIn e X bloqueadas até a homologação por variável. |
 
 Os workflows restantes foram **arquivados, não apagados**: os rascunhos `07`–`11` e os legados não participam do portal atual. Arquivar limpa a visão padrão do n8n e mantém uma recuperação possível caso seja necessário consultar o histórico. Os exports sanitizados continuam no Git apenas como documentação da migração.
 

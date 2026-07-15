@@ -48,7 +48,7 @@ Crie as variáveis em **Settings → Variables** do n8n. Os valores abaixo mant�
 | `SOCIAL_AI_ENABLED` | `false` | Impede qualquer chamada de IA até a credencial estar pronta. |
 | `SOCIAL_AI_MODEL` | `gpt-5-mini` | Modelo usado para gerar sugestões de texto; pode ser ajustado depois. |
 | `SOCIAL_AI_GEMINI_FALLBACK_ENABLED` | `false` | Habilita Gemini somente se o OpenAI falhar e a credencial Gemini estiver conectada. |
-| `SOCIAL_GEMINI_MODEL` | `gemini-2.5-flash` | Modelo nativo Gemini usado no fallback. |
+| `SOCIAL_GEMINI_MODEL` | `gemini-3.5-flash` | Modelo Gemini estável usado no fallback. O nó usa **By ID** para permitir troca centralizada pela variável. |
 | `SOCIAL_AI_OLLAMA_FALLBACK_ENABLED` | `false` | Habilita Ollama local somente depois de validar o servidor e o modelo. |
 | `SOCIAL_OLLAMA_MODEL` | `llama3.2` | Modelo Ollama local usado no último fallback. |
 | `SOCIAL_PUBLISH_ENABLED` | `false` | Trava global: nenhum conteúdo pode ir para uma rede enquanto estiver falso. |
@@ -58,13 +58,13 @@ Crie as variáveis em **Settings → Variables** do n8n. Os valores abaixo mant�
 | `SOCIAL_META_PAGE_ID` | vazio | ID da Página do Facebook. |
 | `SOCIAL_LINKEDIN_ENABLED` | `false` | Libera a rota de publicação multi-imagem do LinkedIn. |
 | `SOCIAL_LINKEDIN_ORGANIZATION_URN` | vazio | URN da Página da empresa, por exemplo `urn:li:organization:...`. |
-| `SOCIAL_LINKEDIN_VERSION` | `202601` | Cabeçalho de versão da API LinkedIn. |
+| `SOCIAL_LINKEDIN_VERSION` | `202607` | Cabeçalho da versão atual da API LinkedIn; revise mensalmente durante a manutenção da integração. |
 | `SOCIAL_X_ENABLED` | `false` | Libera a criação da thread e o upload de mídia no X. |
 | `SOCIAL_PUBLIC_MEDIA_BASE_URL` | vazio | URL HTTPS do endpoint de mídia, a ser preenchida após o Cloudflare Tunnel. |
 | `SOCIAL_MEDIA_SIGNING_SECRET` | vazio | Segredo aleatório exclusivo para assinar URLs de imagens; nunca vai para Git. |
 | `SOCIAL_MEDIA_REQUIRE_SIGNED_URLS` | `false` | Só mude para `true` depois de testar o túnel e as URLs assinadas. |
 
-Para criar uma sugestão de IA, abra o nó nativo **OpenAI · sugestão primária** de `Portal: Ações` e selecione a credencial **OpenAI API** criada no cofre do n8n. Mude `SOCIAL_AI_ENABLED` para `true` somente depois do teste. Os nós **Gemini · fallback** e **Ollama · fallback local** são reais, mas permanecem desligados pelas variáveis até suas credenciais/servidor serem homologados. O portal sempre salva o retorno como rascunho: a legenda atual só muda quando alguém clica em **Usar legenda-base** e depois em **Salvar atualização**.
+Para criar uma sugestão de IA, abra o nó nativo **OpenAI · sugestão primária** de `Portal: Ações` e selecione a credencial **OpenAI API** criada no cofre do n8n. Mude `SOCIAL_AI_ENABLED` para `true` somente depois do teste. Os três nós de modelo usam **By ID** com variáveis (`SOCIAL_AI_MODEL`, `SOCIAL_GEMINI_MODEL` e `SOCIAL_OLLAMA_MODEL`): isso é intencional, pois permite trocar um modelo de forma centralizada sem editar o canvas. Os nós **Gemini · fallback** e **Ollama · fallback local** são reais, mas permanecem desligados pelas variáveis até suas credenciais/servidor serem homologados. O portal sempre salva o retorno como rascunho: a legenda atual só muda quando alguém clica em **Usar legenda-base** e depois em **Salvar atualização**.
 
 ## Credenciais para publicação externa
 

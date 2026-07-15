@@ -7,9 +7,9 @@
         "operation": "analyze",
         "modelId": {
           "__rl": true,
-          "value": "models/gemini-2.5-flash",
+          "value": "models/gemini-3.5-flash",
           "mode": "list",
-          "cachedResultName": "models/gemini-2.5-flash"
+          "cachedResultName": "models/gemini-3.5-flash"
         },
         "text": "Analise tecnicamente a imagem em um contexto industrial.\nIdentifique e descreva com precisão:\n\nO equipamento principal visível, determinando sua função industrial real (ex.: ventilação, exaustão, insuflação, segurança operacional).\n\nO tipo de ambiente em que o equipamento está instalado (ex.: área confinada, túnel, galeria técnica, espaço subterrâneo), justificando com base em elementos visuais.\n\nA finalidade operacional da cena, explicando por que esse equipamento é necessário nesse ambiente específico.\n\nOs riscos industriais envolvidos (ex.: gases, deficiência de oxigênio, calor, partículas) e como o equipamento contribui para mitigá-los.\n\nConformidade com práticas de segurança, considerando o uso de EPIs, procedimentos e normas aplicáveis (ex.: trabalho em espaço confinado).\n\nUtilize linguagem técnica, objetiva e realista, evitando descrições genéricas ou artísticas.\nNão faça suposições fora do que pode ser inferido visualmente.",
         "inputType": "binary",

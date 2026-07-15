@@ -172,7 +172,7 @@
           "parameters": [
             {
               "name": "LinkedIn-Version",
-              "value": "={{ $json.linkedInVersion || \"202601\" }}"
+              "value": "={{ $json.linkedInVersion || \"202607\" }}"
             },
             {
               "name": "X-Restli-Protocol-Version",

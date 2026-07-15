@@ -24,6 +24,70 @@
       ]
     },
     {
+      "id": "canvas-ia",
+      "name": "01 · Portal e IA",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "parameters": {
+        "content": "## 01 · Portal e IA\n\nA sugestão nunca publica conteúdo.\n\nOpenAI é o provedor primário; Gemini e Ollama só entram quando a variável de fallback correspondente estiver habilitada.",
+        "width": 510,
+        "height": 180,
+        "color": 4
+      },
+      "position": [
+        180,
+        -470
+      ]
+    },
+    {
+      "id": "canvas-fila",
+      "name": "02 · Fila protegida",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "parameters": {
+        "content": "## 02 · Fila, reserva e validação\n\nCada destino recebe um `dispatchId` antes da chamada externa. A trava global e as variáveis por rede são verificadas antes de publicar.",
+        "width": 560,
+        "height": 185,
+        "color": 5
+      },
+      "position": [
+        -650,
+        340
+      ]
+    },
+    {
+      "id": "canvas-redes",
+      "name": "03 · Publicadores por rede",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "parameters": {
+        "content": "## 03 · APIs oficiais\n\nCada faixa segue a regra própria da plataforma. HTTP Request fica apenas onde não há operação nativa completa no n8n.",
+        "width": 500,
+        "height": 165,
+        "color": 2
+      },
+      "position": [
+        1550,
+        120
+      ]
+    },
+    {
+      "id": "canvas-resultados",
+      "name": "04 · Resultado e recuperação",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "parameters": {
+        "content": "## 04 · Resultado por entrega\n\nSucesso e falha são gravados no estado e no Ledger nativo. Falhas têm até três tentativas com espera exponencial.",
+        "width": 520,
+        "height": 170,
+        "color": 3
+      },
+      "position": [
+        2700,
+        510
+      ]
+    },
+    {
       "id": "portal-actions-webhook",
       "name": "Webhook do portal",
       "type": "n8n-nodes-base.webhook",
@@ -190,7 +254,7 @@
         "operation": "message",
         "modelId": {
           "mode": "id",
-          "value": "={{ $vars.SOCIAL_GEMINI_MODEL || \"gemini-2.5-flash\" }}"
+          "value": "={{ $vars.SOCIAL_GEMINI_MODEL || \"gemini-3.5-flash\" }}"
         },
         "messages": {
           "values": [
@@ -204,8 +268,7 @@
         "jsonOutput": true,
         "options": {
           "systemMessage": "Retorne somente JSON válido conforme o pedido; não use markdown.",
-          "maxOutputTokens": 1800,
-          "temperature": 0.3
+          "maxOutputTokens": 1800
         }
       },
       "position": [
@@ -435,7 +498,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "parameters": {
-        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst payload=$input.first().json; const network=safeText(payload.network,30); const now=new Date().toISOString(); const requirements={instagram:['SOCIAL_META_ENABLED','SOCIAL_META_INSTAGRAM_ACCOUNT_ID','SOCIAL_PUBLIC_MEDIA_BASE_URL'],facebook:['SOCIAL_META_ENABLED','SOCIAL_META_PAGE_ID'],linkedin:['SOCIAL_LINKEDIN_ENABLED','SOCIAL_LINKEDIN_ORGANIZATION_URN'],x:['SOCIAL_X_ENABLED']}[network]||[]; const missing=requirements.filter(key=>!safeText($vars[key],400));\nif(!missing.length) return [{json:payload}];\nconst {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[network]; if(delivery&&delivery.dispatchId===payload.dispatchId){delivery.status='blocked'; delivery.retryAt=''; delivery.lastError='Configuração pendente: '+missing.join(', '); state.records[payload.contentId].updatedAt=now; state.records[payload.contentId].audit=[...(state.records[payload.contentId].audit||[]),{at:now,operator:'Sistema',action:'bloqueou publicação',comment:delivery.lastError,network,dispatchId:payload.dispatchId}]; saveState(state)}\nreturn [];"
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst payload=$input.first().json; const network=safeText(payload.network,30); const now=new Date().toISOString(); const requirements={instagram:['SOCIAL_META_ENABLED','SOCIAL_META_INSTAGRAM_ACCOUNT_ID','SOCIAL_PUBLIC_MEDIA_BASE_URL'],facebook:['SOCIAL_META_ENABLED','SOCIAL_META_PAGE_ID','SOCIAL_PUBLIC_MEDIA_BASE_URL'],linkedin:['SOCIAL_LINKEDIN_ENABLED','SOCIAL_LINKEDIN_ORGANIZATION_URN'],x:['SOCIAL_X_ENABLED']}[network]||[]; const missing=requirements.filter(key=>!safeText($vars[key],400));\nif(!missing.length) return [{json:payload}];\nconst {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[network]; if(delivery&&delivery.dispatchId===payload.dispatchId){delivery.status='blocked'; delivery.retryAt=''; delivery.lastError='Configuração pendente: '+missing.join(', '); state.records[payload.contentId].updatedAt=now; state.records[payload.contentId].audit=[...(state.records[payload.contentId].audit||[]),{at:now,operator:'Sistema',action:'bloqueou publicação',comment:delivery.lastError,network,dispatchId:payload.dispatchId}]; saveState(state)}\nreturn [];"
       },
       "position": [
         90,
@@ -859,7 +922,7 @@
           "parameters": [
             {
               "name": "LinkedIn-Version",
-              "value": "={{ $vars.SOCIAL_LINKEDIN_VERSION || \"202601\" }}"
+              "value": "={{ $vars.SOCIAL_LINKEDIN_VERSION || \"202607\" }}"
             },
             {
               "name": "X-Restli-Protocol-Version",
@@ -930,7 +993,7 @@
           "parameters": [
             {
               "name": "LinkedIn-Version",
-              "value": "={{ $vars.SOCIAL_LINKEDIN_VERSION || \"202601\" }}"
+              "value": "={{ $vars.SOCIAL_LINKEDIN_VERSION || \"202607\" }}"
             },
             {
               "name": "X-Restli-Protocol-Version",
@@ -1201,8 +1264,8 @@
         "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst payload=$('Loop de entregas').item.json; const now=new Date(); const nowIso=now.toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; const raw=safeText($json.error?.message||$json.message||$json.description||'Falha sem detalhe retornado pela rede.',500); if(delivery&&delivery.dispatchId===payload.dispatchId){const attempts=Number(delivery.attempts||1); const canRetry=attempts<3; delivery.status=canRetry?'retry':'failed'; delivery.retryAt=canRetry?new Date(now.getTime()+Math.min(60,2**attempts)*60000).toISOString():''; delivery.lastError=raw; const record=state.records[payload.contentId]; record.updatedAt=nowIso; record.audit=[...(record.audit||[]),{at:nowIso,operator:'Sistema',action:canRetry?'agendou nova tentativa':'falhou publicação',comment:raw,network:payload.network,dispatchId:payload.dispatchId}]; saveState(state)} return [{json:{...payload,ok:false,error:raw}}];"
       },
       "position": [
-        2580,
-        960
+        2860,
+        1260
       ]
     },
     {
@@ -1214,8 +1277,8 @@
         "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst payload=$('Loop de entregas').item.json; const now=new Date().toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; if(!delivery||delivery.dispatchId!==payload.dispatchId) throw new Error('A confirmação recebida não corresponde à entrega reservada.'); const remoteId=safeText($json.id||$json.data?.id||$json.postId||$json.value?.id||'',200); const permalink=safeText($json.permalink_url||$json.permalink||'',1000); delivery.status='published'; delivery.publishedAt=now; delivery.retryAt=''; delivery.lastRemoteId=remoteId; delivery.lastPermalink=permalink; delivery.lastError=''; const record=state.records[payload.contentId]; const allDone=(record.networks||[]).every(network=>record.deliveries?.[network]?.status==='published'); if(allDone) record.status='publicado'; record.updatedAt=now; record.audit=[...(record.audit||[]),{at:now,operator:'Sistema',action:'publicou conteúdo',comment:'Confirmação recebida da API.',network:payload.network,dispatchId:payload.dispatchId,remoteId}]; saveState(state); return [{json:{...payload,ok:true,remoteId,permalink}}];"
       },
       "position": [
-        2760,
-        720
+        2860,
+        820
       ]
     },
     {
@@ -1248,8 +1311,8 @@
         }
       },
       "position": [
-        3000,
-        820
+        3140,
+        1040
       ],
       "onError": "continueErrorOutput"
     }

@@ -155,7 +155,7 @@ const linkedin = workflow('Postagem Redes — 09 — LinkedIn Empresa (CONFIGURA
     method: 'POST', url: '=https://api.linkedin.com/rest/posts', authentication: 'genericCredentialType', genericAuthType: 'oAuth2Api',
     sendHeaders: true,
     headerParameters: { parameters: [
-      { name: 'LinkedIn-Version', value: '={{ $json.linkedInVersion || "202601" }}' },
+      { name: 'LinkedIn-Version', value: '={{ $json.linkedInVersion || "202607" }}' },
       { name: 'X-Restli-Protocol-Version', value: '2.0.0' },
     ] },
     sendBody: true, specifyBody: 'json',
