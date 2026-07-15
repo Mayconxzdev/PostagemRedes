@@ -8,7 +8,7 @@ Pré-requisitos do portal:
 - volume persistente montado no container como `/files`;
 - acesso à rede local do servidor n8n;
 - os três workflows do portal importados e publicados/ativos;
-- variáveis `NODE_FUNCTION_ALLOW_BUILTIN=fs,path` e `N8N_RESTRICT_FILE_ACCESS_TO=/files` configuradas no container.
+- variáveis `NODE_FUNCTION_ALLOW_BUILTIN=crypto,fs,path` e `N8N_RESTRICT_FILE_ACCESS_TO=/files` configuradas no container.
 
 O endereço do painel segue este formato:
 
@@ -39,29 +39,53 @@ As imagens devem ser PNG, JPG/JPEG ou WEBP. A ordenação usa o nome do arquivo;
 
 No painel, clique em **Nova postagem rápida**, informe o nome do responsável, um título, a legenda e envie de 1 a 10 imagens. O portal cria uma pasta segura na biblioteca e a coloca como pendente, sem depender de Google Sheets.
 
+## Variáveis operacionais do n8n
+
+Crie as variáveis em **Settings → Variables** do n8n. Os valores abaixo mantêm o sistema seguro até cada etapa ser homologada.
+
+| Variável | Valor inicial | Uso |
+|---|---|---|
+| `SOCIAL_AI_ENABLED` | `false` | Impede qualquer chamada de IA até a credencial estar pronta. |
+| `SOCIAL_AI_MODEL` | `gpt-5-mini` | Modelo usado para gerar sugestões de texto; pode ser ajustado depois. |
+| `SOCIAL_AI_GEMINI_FALLBACK_ENABLED` | `false` | Habilita Gemini somente se o OpenAI falhar e a credencial Gemini estiver conectada. |
+| `SOCIAL_GEMINI_MODEL` | `gemini-2.5-flash` | Modelo nativo Gemini usado no fallback. |
+| `SOCIAL_AI_OLLAMA_FALLBACK_ENABLED` | `false` | Habilita Ollama local somente depois de validar o servidor e o modelo. |
+| `SOCIAL_OLLAMA_MODEL` | `llama3.2` | Modelo Ollama local usado no último fallback. |
+| `SOCIAL_PUBLISH_ENABLED` | `false` | Trava global: nenhum conteúdo pode ir para uma rede enquanto estiver falso. |
+| `SOCIAL_META_ENABLED` | `false` | Libera somente a validação das entregas Instagram/Facebook após credencial e IDs Meta. |
+| `SOCIAL_META_GRAPH_VERSION` | `v23.0` | Versão da Graph API usada pelos nós Meta; revise quando a Meta descontinuar uma versão. |
+| `SOCIAL_META_INSTAGRAM_ACCOUNT_ID` | vazio | ID da conta profissional do Instagram. |
+| `SOCIAL_META_PAGE_ID` | vazio | ID da Página do Facebook. |
+| `SOCIAL_LINKEDIN_ENABLED` | `false` | Libera a rota de publicação multi-imagem do LinkedIn. |
+| `SOCIAL_LINKEDIN_ORGANIZATION_URN` | vazio | URN da Página da empresa, por exemplo `urn:li:organization:...`. |
+| `SOCIAL_LINKEDIN_VERSION` | `202601` | Cabeçalho de versão da API LinkedIn. |
+| `SOCIAL_X_ENABLED` | `false` | Libera a criação da thread e o upload de mídia no X. |
+| `SOCIAL_PUBLIC_MEDIA_BASE_URL` | vazio | URL HTTPS do endpoint de mídia, a ser preenchida após o Cloudflare Tunnel. |
+| `SOCIAL_MEDIA_SIGNING_SECRET` | vazio | Segredo aleatório exclusivo para assinar URLs de imagens; nunca vai para Git. |
+| `SOCIAL_MEDIA_REQUIRE_SIGNED_URLS` | `false` | Só mude para `true` depois de testar o túnel e as URLs assinadas. |
+
+Para criar uma sugestão de IA, abra o nó nativo **OpenAI · sugestão primária** de `Portal: Ações` e selecione a credencial **OpenAI API** criada no cofre do n8n. Mude `SOCIAL_AI_ENABLED` para `true` somente depois do teste. Os nós **Gemini · fallback** e **Ollama · fallback local** são reais, mas permanecem desligados pelas variáveis até suas credenciais/servidor serem homologados. O portal sempre salva o retorno como rascunho: a legenda atual só muda quando alguém clica em **Usar legenda-base** e depois em **Salvar atualização**.
+
 ## Credenciais para publicação externa
 
 O portal de aprovação não exige credenciais sociais. Elas só são necessárias ao conectar o publicador real, depois da homologação:
 
-| Serviço | Workflow | Acesso que deve ser criado no n8n | Dados não secretos que ainda precisam ser preenchidos |
+| Serviço | Onde será configurado | Acesso que deve ser criado no n8n | Dados não secretos que ainda precisam ser preenchidos |
 |---|---|---|---|
-| Meta Graph API | `08 — Meta Instagram e Facebook` | OAuth2 exclusivo da aplicação Meta, com permissões de publicação mínimas | ID da Página, ID da conta profissional do Instagram, versão Graph API e base HTTPS pública das mídias. |
-| LinkedIn | `09 — LinkedIn Empresa` | **LinkedIn Community Management OAuth2** para a Página da empresa | URN/ID da organização e versão atual da API LinkedIn. |
-| X | `10 — X thread` | OAuth2 da aplicação X com leitura/escrita e escopo de mídia | Nenhum segredo no canvas; somente configuração de thread, mídia e IDs retornados. |
-| SMTP | `11 — Monitoramento e alerta` | SMTP dedicado para falhas operacionais | Remetente autorizado e caixa/grupo que receberá os avisos. |
+| Meta Graph API | `Portal: Ações` | OAuth2 exclusivo da aplicação Meta, com permissões de publicação mínimas | ID da Página, ID da conta profissional do Instagram, versão Graph API e base HTTPS pública das mídias. |
+| LinkedIn | `Portal: Ações` | **LinkedIn Community Management OAuth2** para a Página da empresa | URN/ID da organização e versão atual da API LinkedIn. |
+| X | `Portal: Ações` | OAuth2 da aplicação X com leitura/escrita e escopo de mídia | Nenhum segredo no canvas; somente configuração de thread, mídia e IDs retornados. |
+| SMTP | `Portal: Ações` | SMTP dedicado para falhas operacionais | Remetente autorizado e caixa/grupo que receberá os avisos. |
 | Google Drive / Sheets | Integração legada opcional | Conectar OAuth somente se o fluxo legado voltar a ser usado. |
-| Gemini / OpenAI / Ollama | Geração assistida legada opcional | Criar/validar credenciais e modelo apenas para automação de conteúdo. |
 
 Crie segredos exclusivamente nas credenciais criptografadas do n8n; nunca edite exports de portfólio ou arquivos versionados para inserir tokens.
 
 ### Ordem segura de configuração
 
-1. Abra `08`, `09`, `10` e `11` no n8n. Eles foram importados como **inativos** e trazem notas amarelas com o papel de cada nó.
-2. Conecte uma única plataforma de teste por vez, no campo de autenticação do próprio nó. Não cole segredos nos campos de expressão ou Code.
-3. Preencha IDs de Página/organização e URL pública HTTPS somente no ambiente n8n. Para Meta, a mídia precisa ser acessível externamente; o endereço interno `http://192.168.254.3:5678` não serve para a plataforma baixar imagens.
-4. Execute o `Teste manual` daquele workflow com conteúdo de teste. Confirme o retorno de ID/permalink e depois configure o alerta de erro.
-5. Somente após cada rede passar no teste, complete a persistência de `published`, ID e permalink no ledger e habilite a rota correspondente no `07 — Fila e roteador`.
-6. O agendamento de cinco minutos do `07` só deve ser ativado quando todas as redes pretendidas estiverem homologadas e a idempotência estiver validada.
+1. Deixe `SOCIAL_PUBLISH_ENABLED=false` durante toda a configuração e conecte uma única plataforma de teste por vez no respectivo nó de `Portal: Ações`.
+2. Preencha IDs de Página/organização e a URL pública HTTPS somente no ambiente n8n. Para Meta, a mídia precisa ser acessível externamente; o endereço interno `http://192.168.254.3:5678` não serve para a plataforma baixar imagens.
+3. Faça uma postagem de teste em cada rede e confirme o ID remoto/permalink antes de habilitar a próxima.
+4. Só depois de todos os testes, ative a publicação por rede e por último altere `SOCIAL_PUBLISH_ENABLED` para `true`.
 
 ### O que você deve fornecer, sem segredo
 
@@ -75,6 +99,8 @@ Para eu terminar a ligação real quando você estiver pronto, envie apenas esta
 
 Não envie senhas, tokens, client secret, bearer token, cookie de sessão ou chave privada por chat. Se algum segredo já foi exposto, revogue-o e crie outro antes de configurar o n8n.
 
-## Migração dos workflows legados
+## Ledger e migração dos workflows legados
 
-Os exports `01` a `03` continuam disponíveis para estudo e futura integração. Os exports `07` a `11` substituem a parte de publicação e monitoramento, mas também devem permanecer desativados até concluir [docs/testing.md](testing.md). Não ative publicação automática, agendamentos legados ou webhooks de publicação do `03`.
+`Portal: Ações` cria automaticamente a Data Table interna **Postagem Redes - Ledger** quando o agendador roda pela primeira vez. Ela espelha cada sucesso/falha por rede com conteúdo, dispatch ID, ID remoto, permalink, erro e horário. O `state.json` continua sendo a fonte imediata da biblioteca visual; a Data Table torna o histórico consultável dentro do n8n sem planilha ou banco externo.
+
+Os exports `01` a `03` e `07` a `11` continuam apenas como referência de migração. O ambiente operacional usa exclusivamente os três workflows do portal. Não ative publicação automática, agendamentos legados ou webhooks de publicação dos exports arquivados.

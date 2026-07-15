@@ -30,10 +30,10 @@ Além da interface, a automação foi construída como workflows pequenos e veri
 </p>
 
 <p align="center">
-  <img src="docs/assets/workflows/02-fila-e-roteador-n8n.svg" alt="Canvas n8n da Fila e roteador: Schedule Trigger, Code, Loop Over Items, Switch e idempotência" width="100%" />
+  <img src="docs/assets/workflows/02-fila-e-roteador-n8n.svg" alt="Canvas n8n do orquestrador: IA nativa com fallback, fila, Data Table, Meta, LinkedIn, X e histórico" width="100%" />
 </p>
 
-O primeiro fluxo está **publicado** no ambiente operacional e responde o portal. O segundo é o desenho de publicação multicanal **intencionalmente inativo**: ele só é conectado após a homologação de OAuth, IDs de páginas e teste de cada plataforma. Essa distinção faz parte da segurança do projeto — aprovação não dispara postagem externa por acidente.
+O primeiro fluxo está **publicado** no ambiente operacional e responde o portal. O segundo representa o workflow operacional `Portal: Ações`: ele já contém a publicação multicanal, mas a trava global começa desligada. Credenciais, IDs de contas e mídia pública precisam ser homologados antes de `SOCIAL_PUBLISH_ENABLED=true`. Essa distinção faz parte da segurança do projeto — aprovação não dispara postagem externa por acidente.
 
 ## O problema que resolvi
 
@@ -64,8 +64,9 @@ flowchart LR
 | Revisão realmente visual | Mostra todos os slides, permite navegação por teclado, edição de título/legenda, seleção de rede e escolha de status. |
 | Ordem controlada | O responsável reorganiza o carrossel antes da aprovação; a alteração é persistida e registrada. |
 | Postagem rápida | Recebe de 1 a 10 imagens por clique ou arrastar/soltar, exibe prévia e permite reorganizar antes de entrar na fila. |
-| Auditoria operacional | Registra operador, data, comentário, destinos e decisão em um ledger local com escrita atômica. |
-| Segurança de publicação | Aprovar não publica. Somente conteúdos aprovados/agendados podem seguir para os publicadores depois da homologação das contas. |
+| IA com fallback real | Usa os nós nativos OpenAI → Gemini → Ollama; cada sugestão fica em rascunho para revisão humana. |
+| Auditoria operacional | Registra operador, data, comentário, destinos e decisão no estado atômico e em uma Data Table nativa do n8n. |
+| Segurança de publicação | Aprovar não publica. A fila reserva uma entrega por rede e a trava global impede chamadas externas antes da homologação. |
 | Desempenho da interface | Carrega cards progressivamente, usa imagens preguiçosas e aplica cache aos assets de prévia. |
 
 ## Decisões de engenharia
@@ -77,15 +78,10 @@ O projeto evita o padrão frágil de um único workflow que gera conteúdo, busc
 | Workflow | Responsabilidade |
 |---|---|
 | `04 · Portal visual` | Renderiza a biblioteca, filtros e modais. |
-| `05 · Portal: ações` | Valida decisões, uploads, ordem dos slides e escreve o ledger. |
+| `05 · Portal: ações` | Recebe ações, cria rascunhos de IA, reserva fila, publica nas quatro redes, controla retry e grava o ledger. |
 | `06 · Portal: arquivos` | Entrega apenas imagens pertencentes ao conteúdo solicitado. |
-| `07 · Fila e roteador` | Seleciona itens aprovados/agendados e divide por rede. |
-| `08 · Meta` | Prepara o fluxo de carrossel Instagram/Facebook. |
-| `09 · LinkedIn Empresa` | Estrutura publicação multi-imagem da Página corporativa. |
-| `10 · X thread` | Adapta legenda em sequência e encadeia posts. |
-| `11 · Monitoramento` | Sanitiza falhas e encaminha alertas SMTP. |
 
-Os publicadores de redes estão incluídos como **rascunhos inativos**, prontos para receber OAuth e IDs no n8n. Essa separação é intencional: demonstra uma operação segura sem simular uma publicação que ainda não foi homologada.
+As quatro rotas de publicação fazem parte de `05 · Portal: ações`: Instagram carrossel, Facebook multi-foto, LinkedIn multi-imagem de Página e X com mídia + thread. O export não contém credencial, token nem ID corporativo; o cofre de credenciais e as variáveis do n8n completam a conexão de cada rede.
 
 ### Segurança e dados
 
@@ -98,13 +94,12 @@ Os publicadores de redes estão incluídos como **rascunhos inativos**, prontos 
 
 ```powershell
 node scripts/build-portal-workflows.mjs
-node scripts/build-publisher-workflows.mjs
 node scripts/build-portfolio-demo.mjs
 node scripts/validate-portal-code.mjs
 pwsh -File scripts/validate-workflows.ps1
 ```
 
-O GitHub Actions valida os exports, impede workflows ativos, bloqueia referências de credenciais e rejeita e-mails reais. A revisão local também confirmou os tipos de nós dos workflows modernos contra a instalação n8n utilizada e verificou conexões internas sem destinos quebrados.
+O GitHub Actions valida os exports, impede workflows ativos, bloqueia referências de credenciais e rejeita e-mails reais. A revisão local também confirmou os tipos de nós atuais contra a instalação n8n utilizada e verificou conexões internas sem destinos quebrados. Veja [o benchmark de arquitetura](docs/benchmark.md) para os padrões comparados e as decisões de projeto.
 
 ## Tecnologias e competências demonstradas
 

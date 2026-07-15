@@ -10,12 +10,12 @@
 - Reorganização de slides já enviados com persistência no sistema de arquivos e auditoria da ação.
 - Limpeza do estado de validação para iniciar a operação sem histórico técnico fictício.
 
-## Validação estrutural dos publicadores atualizados
+## Validação estrutural do orquestrador atualizado
 
-- Os exports `07` a `11` permanecem com `active: false` e não contêm referências de credenciais, e-mails reais ou tokens.
-- Cada tipo de nó presente nos exports foi conferido contra os tipos disponíveis na instância local n8n 2.27.3.
-- As conexões de cada workflow foram validadas para garantir que toda origem e destino referenciem um nó existente no mesmo canvas.
-- Os cinco workflows foram importados como rascunhos inativos: fila/roteador, Meta, LinkedIn, X e monitoramento.
+- O export `05 · Portal: Ações` contém 49 nós e permanece sem credenciais, e-mails reais ou tokens.
+- Os nós atuais OpenAI, Gemini, Ollama, Schedule Trigger, Loop, Data Table, Read/Write File e X v2 foram conferidos contra a instância local n8n 2.27.3.
+- As conexões do orquestrador foram verificadas localmente para garantir origem/destino existentes e nomes únicos.
+- A Data Table de Ledger é criada com `createIfNotExists`, sem depender de planilha ou banco externo.
 - Não houve execução de API social, publicação, criação de credencial ou alteração dos workflows do Mala Direta nesta validação.
 
 ## Roteiro de homologação operacional

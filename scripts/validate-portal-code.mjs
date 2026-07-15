@@ -4,12 +4,15 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const workflow = JSON.parse(readFileSync(resolve(root, 'workflows', '05-portal-acoes.sanitized.json'), 'utf8'));
-const code = workflow.nodes.find((node) => node.name === 'Processar')?.parameters?.jsCode;
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+const codeNodes = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.code');
 
-if (!code) {
-  throw new Error('O export do Portal: Ações não contém o nó Processar.');
+if (codeNodes.length === 0) {
+  throw new Error('O export do Portal: Ações não contém nós Code.');
 }
 
-const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-new AsyncFunction(code);
-console.log('Código assíncrono do Portal: Ações validado.');
+for (const node of codeNodes) {
+  new AsyncFunction(node.parameters?.jsCode || '');
+}
+
+console.log(`Código assíncrono validado em ${codeNodes.length} nó(s) do Portal: Ações.`);

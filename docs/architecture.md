@@ -61,16 +61,35 @@ postagem-redes/
 - `Texto.txt` fornece a legenda inicial; alterações feitas no portal ficam registradas no estado, sem sobrescrever o arquivo original.
 - `state.json` armazena apenas metadados de operação: estado, título/legenda aprovados, redes, data, auditoria e agendamento. A escrita usa arquivo temporário, rename atômico e lock simples para reduzir conflito entre usuários.
 - Para uploads pelo navegador, o Code node lê cada arquivo com `getBinaryDataBuffer()`, em vez de acessar a referência interna do binário. Isso preserva compatibilidade com o armazenamento `filesystem-v2` usado por versões atuais do n8n.
-- O JSON é adequado para a atual biblioteca pequena e LAN. Para alta concorrência, auditoria regulatória ou muitas campanhas, a evolução correta é mover a fila e o histórico para PostgreSQL/Data Table.
+- O JSON é adequado para a atual biblioteca pequena e LAN. O workflow também mantém uma Data Table nativa do n8n chamada `Postagem Redes - Ledger` como espelho consultável dos resultados por rede. Para alta concorrência ou auditoria regulatória, a evolução correta é mover também a reserva da fila para PostgreSQL.
 
-## Publicação futura por plataforma
+## Publicação por plataforma
 
-O portal não chama APIs sociais. A próxima camada deve consumir somente registros `aprovado` ou `agendado`, criar uma chave de idempotência por conteúdo/rede e registrar `publishing`, `published` ou `failed`.
+`Portal: Ações` é o orquestrador real. A cada cinco minutos ele reserva exclusivamente entregas `aprovado` ou `agendado`, uma rede por vez, antes de qualquer chamada externa. A trava `SOCIAL_PUBLISH_ENABLED=false` impede o disparo até a homologação. Cada rede recebe um `dispatchId`, três tentativas no máximo com espera exponencial, registro no `state.json` e espelho no Ledger do n8n.
 
 | Plataforma | Adaptação necessária |
 |---|---|
-| Instagram / Facebook | Publicar carrossel/mídia pela API Graph, respeitando as regras atuais de conta Business/Page. |
-| LinkedIn | Usar a rota atual de publicação multi-imagem e registrar URNs/permalinks. |
-| X | Converter o carrossel em sequência/thread: um post inicial e respostas encadeadas, com mídia e texto adaptados aos limites da plataforma. |
+| Instagram | Cria containers por slide, cria o carrossel, aguarda, consulta `status_code` e só publica quando a Meta retornar `FINISHED`. Requer mídia HTTPS pública; quando a assinatura estiver ligada, usa links temporários assinados. |
+| Facebook | Envia fotos não publicadas, reúne IDs de mídia e cria o post da Página com `attached_media`. |
+| LinkedIn | Lê cada imagem no volume n8n, inicializa/upload binário, reúne URNs e cria post multi-imagem na Página da empresa. |
+| X | Lê/upload da primeira mídia pela API v2, publica o post inicial e encadeia até três respostas com o nó nativo X v2. |
 
-Os workflows legados de IA, Google Drive/Sheets, alertas e retry permanecem isolados. Podem alimentar esta fila posteriormente, mas não são necessários para que uma pessoa use o portal local.
+## Orquestração consolidada
+
+O ambiente operacional mantém somente três workflows ativos para Postagem Redes:
+
+| Workflow | Responsabilidade em produção |
+|---|---|
+| `Portal Visual` | Renderiza a biblioteca, o editor, prévias e URLs de mídia assinadas quando o domínio público estiver configurado. |
+| `Portal: Ações` | Recebe ações do portal, gera IA com fallback OpenAI → Gemini → Ollama, reserva a fila, publica nas quatro redes, aplica retry, salva auditoria e espelha o Ledger nativo. |
+| `Portal: Arquivos` | Entrega somente arquivos pertencentes ao conteúdo solicitado; no modo público exige assinatura HMAC e expiração curta. |
+
+O estado por rede fica em `deliveries`: `draft`, `queued`, `dispatching`, `retry`, `published`, `failed` ou `blocked`. Esse modelo permite retomar uma única rede sem repetir uma publicação já confirmada em outra. O `dispatchId` é reservado antes da chamada externa; confirmações só atualizam a entrega correspondente.
+
+## Proteções de ativação
+
+- A IA só é acionada se `SOCIAL_AI_ENABLED=true`; seu retorno é um rascunho e nunca substitui a legenda sem uma ação explícita da pessoa responsável.
+- A publicação externa fica desligada enquanto `SOCIAL_PUBLISH_ENABLED` não for habilitada depois de cada conta ser homologada.
+- A entrega pública de mídias só é exigida quando `SOCIAL_MEDIA_REQUIRE_SIGNED_URLS=true`; os links incluem assinatura HMAC e expiração de duas horas.
+
+Os workflows legados de IA, Google Drive/Sheets, alertas e retry permanecem arquivados para referência, mas não participam do portal operacional.

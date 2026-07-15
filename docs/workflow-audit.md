@@ -4,7 +4,7 @@
 
 A revisão foi feita contra a instância local em n8n 2.27.3. O orquestrador legado (`03-orquestrador-conteudo`) possui 63 nós, está inativo e mistura geração de conteúdo, Google Drive/Sheets, publicação, alertas e retentativas no mesmo canvas. Ele é útil como histórico, mas não deve ser reativado como publicador da fila visual.
 
-Os workflows `07` a `11` foram criados para substituir o que ainda tem papel operacional, com responsabilidades menores e nós atuais. Eles também estão inativos.
+Os workflows `07` a `11` foram úteis como rascunhos de migração, mas foram arquivados. As responsabilidades úteis foram incorporadas no workflow produtivo `Postagem Redes — Portal: Ações`, sem voltar a espalhar o publicador em cinco automações ativas.
 
 ### Inventário operacional validado — 15/07/2026
 
@@ -16,27 +16,27 @@ A lista da instância foi confrontada com status de publicação, histórico de 
 | `Mala Direta Vesper — Tratamento de Erros (Ativo)` | Recebe e registra falhas do workflow principal. | `Error Trigger` associado ao workflow principal. |
 | `Postagem Redes — Portal Visual` | Entrega a biblioteca visual. | Webhook GET publicado, com execuções de sucesso recentes. |
 | `Postagem Redes — Portal: Arquivos` | Entrega mídias autorizadas ao portal. | Webhook publicado, com execuções de sucesso recentes. |
-| `Postagem Redes — Portal: Ações` | Persiste decisão, ordem de slides e uploads. | Webhook publicado; cadeia Webhook → Code → Respond sem conexões quebradas. |
+| `Postagem Redes — Portal: Ações` | Persiste decisão, IA com fallback, fila, publicação por rede, retry e Ledger. | 49 nós; Webhook + agendamento ativos; rotas Meta, LinkedIn e X bloqueadas até a homologação por variável. |
 
-Os oito workflows restantes foram **arquivados, não apagados**: os cinco rascunhos `07`–`11` ainda dependem de OAuth/IDs reais e os três legados não participam do portal atual. Arquivar limpa a visão padrão do n8n e mantém uma recuperação possível caso seja necessário consultar o histórico. Os exports sanitizados continuam no Git apenas como documentação e base de homologação.
+Os workflows restantes foram **arquivados, não apagados**: os rascunhos `07`–`11` e os legados não participam do portal atual. Arquivar limpa a visão padrão do n8n e mantém uma recuperação possível caso seja necessário consultar o histórico. Os exports sanitizados continuam no Git apenas como documentação da migração.
 
 ## Mapa de substituição
 
 | Bloco legado | Situação | Destino atualizado | Motivo |
 |---|---|---|---|
-| Google Sheets/Drive como fila principal | Opcional, não é mais a operação diária | Portal + `07 — Fila e roteador` | O portal já recebe biblioteca e postagem rápida sem planilha. |
-| `Split in Batches` antigo | Substituído | `Loop Over Items` v3 | Processa uma publicação por vez, preservando ordem e controle de retry. |
+| Google Sheets/Drive como fila principal | Opcional, não é mais a operação diária | Portal + fila integrada ao `Portal: Ações` | O portal já recebe biblioteca e postagem rápida sem planilha. |
+| `Split in Batches` antigo | Substituído | `Loop Over Items` v3 | Processa uma entrega por vez, preservando ordem e controle de retry. |
 | `Switch`/`If` antigos | Substituídos | `Switch` 3.4 e `If` 2.3 | Roteamento explícito por rede e bloqueio por pré-requisito. |
-| “Vagões” HTTP de Instagram | Não reutilizar | `08 — Meta` | Os endpoints atuais ficam nomeados e separados por containers, polling e publicação. |
-| `Postagem instagram` (`NoOp`) | Remover do caminho produtivo | `08 — Meta` | O nó não publicava; apenas mascarava a ausência de integração. |
-| Facebook HTTP único | Refeito | `08 — Meta` | Carrossel de Página exige fotos/IDs e post final, não uma chamada genérica. |
-| Twitter legado/OAuth 1 | Substituído | `10 — X thread` | A instância tem X v2/OAuth2 para posts e respostas; mídia é tratada por HTTP Request. |
-| LinkedIn de pessoas específicas | Substituído | `09 — LinkedIn Empresa` | O objetivo definido é Página da empresa, não perfis pessoais. |
-| Google Drive/Sheets de histórico | Legado opcional | Ledger atual; banco futuro | Evita duplicar a fonte de verdade da fila. |
+| “Vagões” HTTP de Instagram | Refeito | Rota Meta integrada | Containers, espera e publicação de carrossel no mesmo orquestrador. |
+| `Postagem instagram` (`NoOp`) | Removido do caminho produtivo | Rota Meta integrada | O nó não publicava; apenas mascarava a ausência de integração. |
+| Facebook HTTP único | Refeito | Rota Meta integrada | Carrossel de Página exige fotos/IDs e post final, não uma chamada genérica. |
+| Twitter legado/OAuth 1 | Substituído | X v2 integrado | Nó nativo X para post/respostas e HTTP para upload de mídia v2. |
+| LinkedIn de pessoas específicas | Substituído | Página da empresa integrada | Upload de imagens + Posts API multi-imagem para organização. |
+| Google Drive/Sheets de histórico | Legado opcional | Data Table + ledger local | Evita duplicar a fonte de verdade da fila. |
 | `Gravar no Disco`, `Ler do Disco`, `Code (Goleiro)` desconectados | Não usar | Portal/ledger atual | Estavam fora do caminho executável do legado. |
 | `Verificação da imagem` e `[Sheets] Registrar Uso1` desconectados | Não usar | Validação no portal + ledger | Não participavam do fluxo real. |
-| IA Gemini/OpenAI/Ollama com fallback | Opcional | Workflow de rascunho separado, se necessário | Geração assistida não deve publicar sem revisão humana. |
-| E-mails de sucesso/falha | Refeito | `11 — Monitoramento e alerta` | Trata erro sem expor token e centraliza o aviso. |
+| IA Gemini/OpenAI/Ollama com fallback | Incorporado | OpenAI → Gemini → Ollama | Geração assistida permanece rascunho e nunca publica sem revisão humana. |
+| E-mails de sucesso/falha | Futuro opcional | Error workflow do n8n | O Ledger registra a falha; um Error Trigger/SMTP pode ser conectado sem alterar o publicador. |
 
 ## Nós intencionalmente mantidos
 
