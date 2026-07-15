@@ -1,44 +1,32 @@
-# Evidências da implementação
+# Evidências técnicas
 
-## Origem das capturas
+Capturas feitas no editor da instância local n8n em 15/07/2026. Elas mostram os workflows como foram organizados para operação; os exports do repositório permanecem sanitizados e não carregam credenciais ou contas sociais.
 
-As imagens abaixo foram capturadas no editor da instância local do **n8n 2.27.3**, em **15/07/2026**, depois da consolidação dos workflows do portal. São registros da interface real do n8n, não diagramas desenhados para o README.
-
-O enquadramento remove apenas áreas periféricas da janela. Não há credenciais, tokens, contas sociais, IDs corporativos, e-mails ou dados de clientes nas imagens. Os exports versionados continuam sanitizados e inativos para que possam ser inspecionados com segurança.
-
-## `04 · Portal visual`
+## `05 · Portal: Ações`
 
 <p align="center">
-  <img src="assets/n8n-real/04-portal-visual-real.png" alt="Canvas real do workflow Portal Visual no n8n" width="100%" />
+  <a href="assets/n8n-real/05-portal-acoes-canvas-completo.png">
+    <img src="assets/n8n-real/05-portal-acoes-canvas-completo.png" alt="Canvas completo do workflow Portal Ações no n8n" width="100%" />
+  </a>
 </p>
 
-Entrada `GET` do portal. Este workflow se limita a construir a interface a partir da biblioteca e a responder o HTML; ele não decide, não agenda e não publica.
+O orquestrador principal possui 53 nós organizados por responsabilidade: entrada e IA, fila, publicação por rede e resultado. A imagem inteira preserva o contexto do fluxo; clique nela para ampliar.
 
-## `05 · Portal: ações` — entrada e IA
+## `06 · Portal: Arquivos`
 
 <p align="center">
-  <img src="assets/n8n-real/05-portal-acoes-ia-real.png" alt="Canvas real do Portal Ações com Webhook, roteador de ação e fallback de IA" width="100%" />
+  <a href="assets/n8n-real/06-portal-arquivos-canvas-completo.png">
+    <img src="assets/n8n-real/06-portal-arquivos-canvas-completo.png" alt="Canvas completo do workflow Portal Arquivos no n8n" width="100%" />
+  </a>
 </p>
 
-O fluxo recebe a ação do portal, normaliza a solicitação e direciona a geração assistiva. O bloco mostra OpenAI como primário e Gemini/Ollama como alternativas; variáveis mantêm todos desligados até a configuração das credenciais. O resultado da IA é salvo como rascunho.
+Workflow isolado para servir mídia autorizada ao portal: recebe a solicitação, valida o arquivo solicitado e responde o binário. A separação impede que a tela de aprovação tenha acesso direto e irrestrito ao volume de mídia.
 
-## `05 · Portal: ações` — fila e roteamento
+## `04 · Portal Visual`
 
-<p align="center">
-  <img src="assets/n8n-real/05-portal-acoes-fila-real.png" alt="Canvas real do Portal Ações com Schedule Trigger, Data Table, fila e roteamento por rede" width="100%" />
-</p>
+O terceiro workflow mantido é o `Portal Visual`: um webhook `GET` que lê a biblioteca e entrega a interface de revisão. A demonstração do resultado dessa camada está na seção [Interface de operação](../README.md#interface-de-operação).
 
-O agendador consulta a fila, seleciona somente itens elegíveis, cria a reserva de entrega e distribui por rede. A publicação externa fica depois das verificações e da trava global, não no caminho de aprovação do usuário.
-
-## `06 · Portal: arquivos`
-
-<p align="center">
-  <img src="assets/n8n-real/06-portal-arquivos-real.png" alt="Canvas real do workflow Portal Arquivos no n8n" width="100%" />
-</p>
-
-Endpoint dedicado à mídia. Ele existe para que o portal receba apenas arquivos pertencentes ao conteúdo solicitado e possa evoluir para URL temporária assinada em uma exposição HTTPS.
-
-## Como reproduzir a revisão
+## Reprodução
 
 ```powershell
 node scripts/build-portal-workflows.mjs
@@ -46,4 +34,4 @@ node scripts/validate-portal-code.mjs
 pwsh -NoProfile -File scripts/validate-workflows.ps1
 ```
 
-Os comandos recriam os três exports sanitizados e verificam a política de publicação do portfólio. Eles não conectam contas nem fazem chamadas para APIs sociais.
+Esses comandos regeneram e validam os três exports sanitizados; não conectam contas e não executam publicações externas.

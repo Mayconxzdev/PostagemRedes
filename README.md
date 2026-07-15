@@ -29,17 +29,17 @@ O problema não era somente "postar em quatro redes". Era dar a uma pessoa não 
 
 As telas são uma demonstração estática anônima, gerada a partir do template do portal e disponível em [docs/demo/index.html](docs/demo/index.html). Ela permite avaliar o fluxo visual sem expor dados internos ou precisar de acesso à infraestrutura.
 
-## Workflows n8n reais — canvas e responsabilidades
+## Workflow principal no n8n
 
-As imagens desta seção são **capturas do editor real do n8n**, feitas na instância local em execução em **15/07/2026**. Não são diagramas ilustrados nem mockups recriados. Elas foram enquadradas somente para não exibir navegação periférica; não há credencial, token, ID de conta nem dado de cliente visível.
-
-<p align="center">
-  <img src="docs/assets/n8n-real/05-portal-acoes-ia-real.png" alt="Canvas real do n8n com a entrada do Portal, roteador de ação e blocos de IA com fallback" width="100%" />
-</p>
+O canvas abaixo é o workflow `Portal: Ações` na instância local. Ele reúne a entrada do portal, IA assistiva, fila protegida, rotas de publicação e registro de resultado — sem transformar aprovação em publicação automática.
 
 <p align="center">
-  <img src="docs/assets/n8n-real/05-portal-acoes-fila-real.png" alt="Canvas real do n8n com scheduler, Data Table, elegibilidade, reserva e roteador por rede" width="100%" />
+  <a href="docs/assets/n8n-real/05-portal-acoes-canvas-completo.png">
+    <img src="docs/assets/n8n-real/05-portal-acoes-canvas-completo.png" alt="Canvas completo e real do workflow Portal Ações no n8n" width="100%" />
+  </a>
 </p>
+
+<p align="center"><sub>Canvas real do n8n · 53 nós · clique para ampliar</sub></p>
 
 | Workflow mantido | Gatilho | Responsabilidade verificável |
 |---|---|---|
@@ -47,7 +47,7 @@ As imagens desta seção são **capturas do editor real do n8n**, feitas na inst
 | `05 · Portal: ações` | Webhook `POST` + agenda | Persiste decisões, produz rascunhos com IA, reserva entregas, aplica retry, registra resultado e contém as rotas de publicação. |
 | `06 · Portal: arquivos` | Webhook `GET` | Serve somente mídia vinculada ao conteúdo solicitado; valida item/nome e suporta URL assinada quando exposto publicamente. |
 
-O workflow `Portal: Ações` tem **53 nós**. Ele está dividido no próprio canvas em quatro blocos legíveis: **Portal e IA**, **Fila protegida**, **APIs oficiais** e **Resultado por entrega**. A captura de [evidências técnicas](docs/evidence.md) reúne os três canvases reais e explica o recorte de cada um.
+Os exports do Git removem credenciais e dados operacionais. As capturas completas dos workflows auxiliares e a origem visual estão em [Evidências técnicas](docs/evidence.md).
 
 ## O fluxo de produto
 
