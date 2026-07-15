@@ -26,8 +26,9 @@ flowchart LR
 ## O que foi construído
 
 - **Biblioteca visual de conteúdos:** lê pastas locais com imagens e `Texto.txt`, reconhece carrosséis e apresenta cada item em cards pesquisáveis.
-- **Prévia de aprovação real:** exibe todos os slides, permite trocar a legenda, selecionar redes, definir responsável, comentar a decisão e escolher pendente, aprovado, agendado ou rejeitado.
-- **Postagem rápida:** o responsável envia de 1 a 10 imagens e a legenda por uma tela simples, sem precisar criar pasta manualmente ou editar planilha.
+- **Editor visual de carrossel:** exibe todos os slides, permite navegar por botões ou teclado, trocar título/legenda, acompanhar a contagem de caracteres, selecionar redes, definir responsável, comentar a decisão e escolher pendente, aprovado, agendado ou rejeitado.
+- **Ordem controlada de slides:** a pessoa ajusta a sequência antes do envio e pode reorganizar um carrossel já existente; a ordem é persistida na biblioteca e auditada.
+- **Postagem rápida em uma única tela:** o responsável arrasta ou escolhe de 1 a 10 imagens, vê a prévia, remove arquivos, define a ordem, escreve a legenda e envia para aprovação sem criar pasta ou editar planilha.
 - **Rastreabilidade operacional:** cada decisão grava operador, data, comentário, redes escolhidas e estado em um ledger local com escrita atômica.
 - **Separação segura de responsabilidades:** aprovação organiza a fila; nenhum clique no portal publica externamente enquanto as credenciais não forem validadas.
 - **Compatibilidade com o legado:** os workflows históricos de geração por Google Drive/Sheets, IA, retry e alerta de erro permanecem exportados para estudo e evolução, sem acoplamento obrigatório ao portal.
@@ -54,8 +55,8 @@ Os três novos exports do portal são complementares aos três workflows legados
 
 ## Jornada de uso
 
-1. Coloque um novo carrossel em uma subpasta da biblioteca, com imagens PNG/JPG/WEBP e `Texto.txt`; ou use **Nova postagem rápida** no portal.
-2. Abra o atalho corporativo do portal, pesquise o conteúdo e clique em **Revisar**.
+1. Coloque um novo carrossel em uma subpasta da biblioteca, com imagens PNG/JPG/WEBP e `Texto.txt`; ou use **Criar publicação** no portal.
+2. Abra o atalho corporativo do portal, pesquise o conteúdo e clique em **Abrir editor**.
 3. Navegue pelos slides, ajuste a legenda, selecione as redes e informe o responsável.
 4. Aprove imediatamente, agende ou rejeite com um comentário.
 5. Quando todas as contas estiverem homologadas, o publicador usará somente os itens aprovados/agendados e gravará o ID/permalink por rede.
@@ -72,10 +73,21 @@ Foi escolhido acesso sem login para facilitar o uso em computadores autorizados 
 
 ```powershell
 node scripts/build-portal-workflows.mjs
+node scripts/validate-portal-code.mjs
 pwsh -File scripts/validate-workflows.ps1
 ```
 
 O GitHub Actions executa validação de JSON, garante que os exports permaneçam inativos, rejeita blocos de credenciais e impede e-mails reais no material de portfólio.
+
+## Atalho Windows com ícone próprio
+
+O projeto inclui um instalador de atalho `.lnk` com ícone próprio, sem depender do ícone genérico de atalhos de internet:
+
+```powershell
+pwsh -File scripts/install-postagem-redes-shortcut.ps1 -PortalUrl 'http://<servidor-n8n>:5678/webhook/postagem-redes'
+```
+
+O script cria o ícone em `%LOCALAPPDATA%\Vesper\PostagemRedes` e adiciona **Postagem Redes.lnk** à Área de Trabalho do usuário atual. Em cada computador da empresa, execute o mesmo comando apontando para o servidor n8n interno.
 
 ## Documentação
 

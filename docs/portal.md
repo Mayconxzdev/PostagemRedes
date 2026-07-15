@@ -28,11 +28,13 @@ Cada card mostra miniatura, título, quantidade de slides, estado, resumo da leg
 
 ### Revisão
 
-Ao abrir **Revisar**, a pessoa vê todos os slides do carrossel. Pode trocar a legenda, marcar Instagram, Facebook, LinkedIn e X/thread, preencher o nome do operador, informar comentário e decidir o estado. Aprovar ou agendar exige ao menos uma rede; agendar exige data e hora.
+Ao abrir **Abrir editor**, a pessoa vê todos os slides do carrossel em uma prévia ampla. Pode navegar por setas ou teclado, trocar o título interno, editar a legenda, acompanhar o contador de caracteres, marcar Instagram, Facebook, LinkedIn e X/thread, preencher o nome do operador, informar comentário e decidir o estado. Aprovar ou agendar exige ao menos uma rede; agendar exige data e hora.
+
+O editor também permite mudar a ordem de qualquer slide. A mudança só é aplicada quando o responsável clica em **Salvar ordem**; então os arquivos são reorganizados na biblioteca e o histórico recebe um registro da ação.
 
 ### Postagem rápida
 
-Pensada para conteúdo urgente criado no momento. A tela recebe título, legenda e de 1 a 10 imagens. A criação entra como `pendente`, portanto segue a mesma etapa visual de aprovação e não publica automaticamente.
+Pensada para conteúdo urgente criado no momento. A tela recebe título, legenda e de 1 a 10 imagens por clique ou arrastar/soltar. Antes de enviar, é possível visualizar os arquivos, remover uma imagem e definir a sequência final com as setas. A criação entra como `pendente`, portanto segue a mesma etapa visual de aprovação e não publica automaticamente.
 
 ## Operação diária recomendada
 

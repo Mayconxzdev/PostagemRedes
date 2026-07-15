@@ -6,14 +6,15 @@
 - Carregamento de slides por endpoint restrito e `Content-Type` correto.
 - Prévia visual de todos os slides, edição de legenda e seleção de redes.
 - Registro de decisão em JSON sem acionar API social.
-- Envio de postagem rápida por multipart com uma imagem de teste e remoção do conteúdo temporário após a verificação.
+- Envio de postagem rápida por multipart com imagens de teste, verificando bytes reais no disco e ordem definida no navegador; conteúdo temporário removido após a verificação.
+- Reorganização de slides já enviados com persistência no sistema de arquivos e auditoria da ação.
 - Limpeza do estado de validação para iniciar a operação sem histórico técnico fictício.
 
 ## Roteiro de homologação operacional
 
 1. **Acesso LAN:** abrir o atalho em dois computadores autorizados e confirmar que a biblioteca carrega.
 2. **Biblioteca:** adicionar uma pasta de teste com imagens e `Texto.txt`, atualizar o painel e revisar a ordem do carrossel.
-3. **Postagem rápida:** enviar 1, 2 e 10 imagens; conferir mensagem de sucesso e item pendente. Tentar formato não permitido e mais de 10 arquivos para confirmar rejeição.
+3. **Postagem rápida:** enviar 1, 2 e 10 imagens; usar a prévia para mover/remover slides e conferir que a ordem final é preservada. Tentar formato não permitido e mais de 10 arquivos para confirmar rejeição.
 4. **Decisões:** salvar pendente, aprovado, agendado e rejeitado; conferir operador, comentário, redes e data no histórico.
 5. **Concorrência:** dois operadores alteram conteúdos distintos e, depois, o mesmo conteúdo; confirmar que o segundo recebe orientação para atualizar em caso de lock.
 6. **Recuperação:** reiniciar o container n8n e confirmar que a fila e imagens persistem no volume.

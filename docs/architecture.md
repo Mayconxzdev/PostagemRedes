@@ -59,7 +59,8 @@ postagem-redes/
 
 - Cada subpasta em `entrada/` é um conteúdo. O portal suporta PNG, JPG/JPEG e WEBP.
 - `Texto.txt` fornece a legenda inicial; alterações feitas no portal ficam registradas no estado, sem sobrescrever o arquivo original.
-- `state.json` armazena apenas metadados de operação: estado, legenda aprovada, redes, data, auditoria e agendamento. A escrita usa arquivo temporário, rename atômico e lock simples para reduzir conflito entre usuários.
+- `state.json` armazena apenas metadados de operação: estado, título/legenda aprovados, redes, data, auditoria e agendamento. A escrita usa arquivo temporário, rename atômico e lock simples para reduzir conflito entre usuários.
+- Para uploads pelo navegador, o Code node lê cada arquivo com `getBinaryDataBuffer()`, em vez de acessar a referência interna do binário. Isso preserva compatibilidade com o armazenamento `filesystem-v2` usado por versões atuais do n8n.
 - O JSON é adequado para a atual biblioteca pequena e LAN. Para alta concorrência, auditoria regulatória ou muitas campanhas, a evolução correta é mover a fila e o histórico para PostgreSQL/Data Table.
 
 ## Publicação futura por plataforma

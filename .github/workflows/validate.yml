@@ -19,6 +19,7 @@ jobs:
       - name: Rebuild sanitized portal exports
         run: |
           node scripts/build-portal-workflows.mjs
+          node scripts/validate-portal-code.mjs
           git diff --exit-code -- workflows
 
       - name: Validate workflow JSON
