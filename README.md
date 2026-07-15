@@ -2,7 +2,7 @@
 
 [![Validação dos exports](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml)
 
-**Projeto autoral de [Maycon Xavier](https://github.com/Mayconxzdev)** — uma central visual construída no n8n para transformar carrosséis técnicos em uma fila clara de revisão, aprovação, agendamento e publicação multicanal.
+**Projeto autoral de [Mayconxzdev](https://github.com/Mayconxzdev)** — uma central visual construída no n8n para transformar carrosséis técnicos em uma fila clara de revisão, aprovação, agendamento e publicação multicanal.
 
 Em vez de depender de planilhas e passos manuais, quem opera visualiza o conteúdo como ele será publicado, ajusta legenda e destinos, registra a decisão e mantém a rastreabilidade da fila. A publicação externa é uma etapa independente e protegida por homologação de conta.
 
