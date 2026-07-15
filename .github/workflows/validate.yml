@@ -1,0 +1,30 @@
+name: Validate portfolio exports
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate workflow JSON
+        run: |
+          for file in workflows/*.json; do
+            jq empty "$file"
+          done
+
+      - name: Reject credential blocks and real email addresses
+        run: |
+          if grep -R --include='*.json' -n '"credentials"' workflows; then
+            echo 'Credential references are not allowed in portfolio exports.'
+            exit 1
+          fi
+          if grep -R --include='*.json' -nE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' workflows; then
+            echo 'Real email addresses are not allowed in portfolio exports.'
+            exit 1
+          fi

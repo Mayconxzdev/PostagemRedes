@@ -1,0 +1,83 @@
+{
+  "name": "Postagem Redes — Assistente de Retry",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "postagem-redes-tente-novamente",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -112
+      ],
+      "name": "Webhook: Receber Clique",
+      "webhookId": "c15f450e-ca88-44ca-94e4-2378ba79f28c"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:5678/api/v1/executions/{{ $json.query.id }}/retry",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        432,
+        -112
+      ],
+      "name": "API n8n: Re-executar"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<!DOCTYPE html>\n<html>\n<body style=\"font-family:sans-serif; text-align:center; padding:50px; background:#f0fdf4\">\n  <h1 style=\"color:#166534\">✅ Ordem Recebida!</h1>\n  <p>O n8n já está tentando executar o fluxo novamente (ID: {{ $json.query.id }}).</p>\n  <p>Pode fechar esta janela.</p>\n  <script>setTimeout(function(){window.close()}, 3000);</script>\n</body>\n</html>",
+        "options": {
+          "responseHeaders": {
+            "entries": {
+              "name": "Content-Type",
+              "value": "text/html"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        -112
+      ],
+      "name": "Mensagem na Tela"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook: Receber Clique": {
+      "main": {
+        "node": "API n8n: Re-executar",
+        "type": "main",
+        "index": 0
+      }
+    },
+    "API n8n: Re-executar": {
+      "main": {
+        "node": "Mensagem na Tela",
+        "type": "main",
+        "index": 0
+      }
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "meta": {
+    "instanceId": "09cef9b329ec85ec9228e4dc9910d2f1b5c610857100680c9e9e1323cb4f2624"
+  },
+  "tags": null
+}

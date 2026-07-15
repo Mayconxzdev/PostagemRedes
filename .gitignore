@@ -1,0 +1,20 @@
+# Runtime and local configuration
+.env
+.env.*
+!.env.example
+*.log
+
+# n8n runtime exports and execution data
+n8n-data/
+backups/
+executions/
+
+# Raw content library is kept outside the portfolio repository.
+# Only intentionally curated examples may be added under assets/.
+Fotos-Rede/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
