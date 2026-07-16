@@ -6,23 +6,6 @@
 
 > **Estado verificável:** os três workflows do portal existem e estão ativos na instância local de n8n. Os exports públicos são sanitizados e inativos por design; não contêm contas, tokens, IDs corporativos ou dados de clientes. A publicação externa só é elegível depois da homologação OAuth de cada rede.
 
-## O problema que resolvi
-
-Publicar em quatro redes não é somente copiar uma legenda. O fluxo precisava permitir que uma pessoa não técnica visualizasse o carrossel, ajustasse o texto, escolhesse destinos, organizasse a ordem dos slides, registrasse quem tomou a decisão e evitasse publicação duplicada ou indevida.
-
-| Para quem | O que passa a ser possível | Proteção principal |
-|---|---|---|
-| Equipe de conteúdo e marketing técnico | Criar ou importar carrosséis, revisar, aprovar e agendar em uma única interface | **Aprovar não publica:** a fila só segue após homologação explícita das contas |
-
-## O que construí
-
-- Portal operacional em HTML, CSS e JavaScript entregue pelo n8n, sem uma aplicação paralela para manter.
-- Biblioteca visual que identifica carrosséis e a legenda inicial em `Texto.txt`.
-- Editor para revisar slides, texto, redes, status, responsável, comentário e agendamento.
-- Postagem rápida com upload de 1 a 10 imagens e controle de ordem antes da aprovação.
-- Orquestração com fila por destino, `dispatchId`, retry, ledger e proteção contra duplicidade.
-- IA assistiva para rascunho de legenda com fallback OpenAI → Gemini → Ollama; a resposta nunca substitui o texto sem confirmação humana.
-
 ## Interface de operação
 
 As telas abaixo usam conteúdo fictício e anonimizado, mas foram geradas a partir do próprio template do portal versionado no repositório.
@@ -46,6 +29,23 @@ As telas abaixo usam conteúdo fictício e anonimizado, mas foram geradas a part
 </p>
 
 O template navegável e os dados fictícios usados nessas telas estão em [docs/demo](docs/demo/index.html). Ele não chama o n8n nem uma API externa.
+
+## O problema que resolvi
+
+Publicar em quatro redes não é somente copiar uma legenda. O fluxo precisava permitir que uma pessoa não técnica visualizasse o carrossel, ajustasse o texto, escolhesse destinos, organizasse a ordem dos slides, registrasse quem tomou a decisão e evitasse publicação duplicada ou indevida.
+
+| Para quem | O que passa a ser possível | Proteção principal |
+|---|---|---|
+| Equipe de conteúdo e marketing técnico | Criar ou importar carrosséis, revisar, aprovar e agendar em uma única interface | **Aprovar não publica:** a fila só segue após homologação explícita das contas |
+
+## O que construí
+
+- Portal operacional em HTML, CSS e JavaScript entregue pelo n8n, sem uma aplicação paralela para manter.
+- Biblioteca visual que identifica carrosséis e a legenda inicial em `Texto.txt`.
+- Editor para revisar slides, texto, redes, status, responsável, comentário e agendamento.
+- Postagem rápida com upload de 1 a 10 imagens e controle de ordem antes da aprovação.
+- Orquestração com fila por destino, `dispatchId`, retry, ledger e proteção contra duplicidade.
+- IA assistiva para rascunho de legenda com fallback OpenAI → Gemini → Ollama; a resposta nunca substitui o texto sem confirmação humana.
 
 ## Automação real no n8n
 
