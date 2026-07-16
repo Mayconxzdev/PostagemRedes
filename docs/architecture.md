@@ -81,7 +81,7 @@ O ambiente operacional mantém somente três workflows ativos para Postagem Rede
 | Workflow | Responsabilidade em produção |
 |---|---|
 | `Portal Visual` | Renderiza a biblioteca, o editor, prévias e URLs de mídia assinadas quando o domínio público estiver configurado. Um nó de documentação deixa explícito que não há publicação nesse fluxo. |
-| `Portal: Ações` | Recebe ações do portal, gera IA com fallback OpenAI → Gemini → Ollama, reserva a fila, publica nas quatro redes, aplica retry, salva auditoria e espelha o Ledger nativo. O canvas é dividido visualmente em Portal/IA, Fila, APIs oficiais e Resultado. |
+| `Portal: Ações` | Recebe ações do portal, gera IA com fallback OpenAI → Gemini → Ollama, reserva a fila, aplica retry, salva auditoria, espelha o Ledger nativo e contém as rotas para quatro redes. As chamadas externas permanecem bloqueadas até a homologação das contas, da mídia HTTPS e das variáveis de ativação. O canvas é dividido visualmente em Portal/IA, Fila, APIs oficiais e Resultado. |
 | `Portal: Arquivos` | Entrega somente arquivos pertencentes ao conteúdo solicitado; no modo público exige assinatura HMAC e expiração curta. Um nó de documentação descreve a proteção do endpoint. |
 
 O estado por rede fica em `deliveries`: `draft`, `queued`, `dispatching`, `retry`, `published`, `failed` ou `blocked`. Esse modelo permite retomar uma única rede sem repetir uma publicação já confirmada em outra. O `dispatchId` é reservado antes da chamada externa; confirmações só atualizam a entrega correspondente.

@@ -1,6 +1,6 @@
 # Evidências técnicas
 
-Capturas feitas no editor da instância local n8n em 15/07/2026. Elas mostram os workflows como foram organizados para operação; os exports do repositório permanecem sanitizados e não carregam credenciais ou contas sociais.
+Capturas feitas no editor da instância local n8n em 15/07/2026. Elas comprovam a organização dos workflows em execução; os exports do repositório permanecem sanitizados e não carregam credenciais, IDs de conta ou dados de clientes.
 
 ## `05 · Portal: Ações`
 
@@ -10,7 +10,7 @@ Capturas feitas no editor da instância local n8n em 15/07/2026. Elas mostram os
   </a>
 </p>
 
-O orquestrador principal possui 53 nós organizados por responsabilidade: entrada e IA, fila, publicação por rede e resultado. A imagem inteira preserva o contexto do fluxo; clique nela para ampliar.
+O orquestrador principal possui 53 nós. Da esquerda para a direita, o canvas separa entrada do portal e IA, reserva da fila, adaptadores de cada rede e registro de resultado. A imagem inteira preserva o contexto do fluxo; clique nela para ampliar.
 
 ## `06 · Portal: Arquivos`
 
