@@ -21,3 +21,4 @@ Thumbs.db
 
 # Artefatos temporários de validação visual. As capturas curadas vivem em docs/assets/screenshots/.
 .playwright-cli/
+output/
