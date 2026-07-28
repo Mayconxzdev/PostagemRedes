@@ -1,4 +1,4 @@
-# Evolução para n8n 2.27+
+# Evolução para n8n 2.32+
 
 ## Decisão de arquitetura
 
@@ -12,7 +12,7 @@ Google Sheets e Google Drive deixaram de ser necessários para a operação diá
 
 ## Atualização de nós
 
-Os workflows sanitizados foram atualizados para os nós disponíveis na instância n8n 2.27.3, priorizando componentes nativos e contratos explícitos quando uma API exige comportamento específico:
+Os workflows sanitizados refletem a instância n8n 2.32.5 revisada em 28/07/2026. A atualização prioriza nós nativos e contratos explícitos quando uma API exige comportamento específico:
 
 | Necessidade | Implementação atual |
 |---|---|
@@ -24,7 +24,7 @@ Os workflows sanitizados foram atualizados para os nós disponíveis na instânc
 | Mídia local | `Read/Write Files from Disk` limitado ao volume `/files` |
 | Thread no X | nó nativo `X (Formerly Twitter)` v2 para post inicial e respostas |
 
-As rotas de Instagram, Facebook, LinkedIn e X foram preparadas para as APIs oficiais. Elas não executam chamadas externas enquanto a trava global estiver desligada e cada conta não tiver sido homologada.
+As rotas de Instagram, Facebook, LinkedIn e X usam APIs oficiais. Facebook foi exercitado em publicação multi-imagem; Instagram precisa de origem HTTPS de mídia mais estável para a rotina; LinkedIn e X permanecem condicionados a acesso/crédito do respectivo provedor. As flags por rede preservam isolamento entre os destinos.
 
 ## Itens que exigem configuração manual
 

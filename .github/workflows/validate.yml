@@ -1,4 +1,4 @@
-name: Validate portfolio exports
+name: Validate portfolio snapshot
 
 on:
   push:
@@ -16,29 +16,20 @@ jobs:
         with:
           node-version: 22
 
-      - name: Rebuild sanitized portal exports
+      - name: Validate sanitized workflow snapshot
         run: |
-          node scripts/build-portal-workflows.mjs
+          node scripts/validate-portfolio-workflows.mjs
           node scripts/validate-portal-code.mjs
-          git diff --exit-code -- workflows
 
-      - name: Validate workflow JSON
+      - name: Rebuild deterministic portfolio demo
         run: |
-          for file in workflows/*.json; do
-            jq empty "$file"
-          done
+          node scripts/build-portfolio-demo.mjs
+          git diff --exit-code -- docs/demo
 
-      - name: Reject credential blocks and real email addresses
-        run: |
-          if grep -R --include='*.json' -n '"credentials"' workflows; then
-            echo 'Credential references are not allowed in portfolio exports.'
-            exit 1
-          fi
-          if grep -R --include='*.json' -nE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' workflows; then
-            echo 'Real email addresses are not allowed in portfolio exports.'
-            exit 1
-          fi
-
-      - name: Enforce portfolio workflow policy
+      - name: Validate workflow JSON and policy
         shell: pwsh
-        run: pwsh -File scripts/validate-workflows.ps1
+        run: |
+          Get-ChildItem workflows -Filter '*.json' | ForEach-Object {
+            Get-Content -Raw $_.FullName | ConvertFrom-Json -Depth 100 | Out-Null
+          }
+          pwsh -NoProfile -File scripts/validate-workflows.ps1

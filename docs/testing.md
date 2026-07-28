@@ -10,13 +10,14 @@
 - Reorganização de slides já enviados com persistência no sistema de arquivos e auditoria da ação.
 - Limpeza do estado de validação para iniciar a operação sem histórico técnico fictício.
 
-## Validação estrutural do orquestrador atualizado
+## Validação estrutural e operacional registrada
 
-- O export `05 · Portal: Ações` contém 53 nós, incluindo quatro notas de documentação visual, e permanece sem credenciais, e-mails reais ou tokens.
-- Os nós atuais OpenAI, Gemini, Ollama, Schedule Trigger, Loop, Data Table, Read/Write File e X v2 foram conferidos contra a instância local n8n 2.27.3.
-- As conexões do orquestrador foram verificadas localmente para garantir origem/destino existentes e nomes únicos.
-- A Data Table de Ledger é criada com `createIfNotExists`, sem depender de planilha ou banco externo.
-- Não houve execução de API social, publicação, criação de credencial ou alteração dos workflows do Mala Direta nesta validação.
+- O snapshot `05 · Portal: Ações` contém 58 nós e permanece sem credenciais, e-mails reais, IDs da instância, domínio de túnel ou tokens.
+- Os nós OpenAI, Gemini, Ollama, Schedule Trigger, Loop, Data Table, Read/Write File, HTTP Request e X v2 foram revisados contra a instância n8n 2.32.5.
+- As conexões do orquestrador foram conferidas localmente; o portal, o workflow de ações e o endpoint de arquivos estavam ativos na instância de operação.
+- O Facebook criou publicação multi-imagem em uma Página de teste: seis fotos não publicadas foram retornadas pela Graph API e reunidas no post.
+- O Instagram teve publicação de teste confirmada, porém a repetição com seis slides revelou timeout do downloader remoto da Meta no túnel público. A correção necessária é a origem de mídia, não o OAuth.
+- X registrou falha de crédito da conta de teste sem interromper Facebook/Instagram; LinkedIn não foi executado por ausência de credencial/acesso à Página.
 
 ## Roteiro de homologação operacional
 
@@ -31,16 +32,16 @@
 ## Roteiro de publicação externa — somente após credenciais
 
 1. Criar contas/canais de teste e validar OAuth de cada plataforma.
-2. Publicar um carrossel aprovado no Instagram/Facebook e gravar o permalink.
+2. Publicar um carrossel inédito no Instagram/Facebook e gravar o permalink. Para Instagram, usar origem HTTPS estável e imagens otimizadas antes de repetir o teste.
 3. Publicar multi-imagem no LinkedIn conforme a API vigente e gravar URNs/permalink.
 4. Converter o mesmo conteúdo em uma sequência curta no X, verificando o encadeamento de respostas e mídia.
 5. Repetir a solicitação e confirmar idempotência por rede.
 6. Simular timeout/falha temporária e validar retry sem duplicar publicação.
 7. Só então habilitar conteúdo de produção e agendamento real.
 
-## Critérios de ativação do publicador
+## Critérios de ativação por rede
 
-Não conecte a fila às redes até que todos os itens abaixo sejam verdadeiros:
+Não habilite uma rede até que todos os itens abaixo sejam verdadeiros. As demais redes podem permanecer isoladas por flag:
 
 - Cada conta apresenta teste de conexão e permissões comprovadas.
 - Uma publicação de teste aprovada foi validada em cada rede desejada.

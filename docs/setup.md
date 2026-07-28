@@ -6,7 +6,7 @@ Este documento descreve a configuração operacional dos workflows. Os exports d
 
 Pré-requisitos:
 
-- n8n 2.27 ou superior em Docker;
+- n8n 2.32.5 em Docker (versão da instância validada em 28/07/2026);
 - volume persistente montado no container como `/files`;
 - os três workflows do portal importados, publicados e ativos;
 - acesso à rede local do servidor n8n;
@@ -19,6 +19,13 @@ http://<servidor-n8n>:5678/webhook/postagem-redes
 ```
 
 Um atalho `.url` pode ser distribuído apenas para os computadores autorizados. O portal foi projetado para uso interno; não o exponha publicamente sem HTTPS, autenticação e restrição de origem.
+
+Para criar um atalho em uma máquina Windows sem registrar um endereço interno neste repositório, execute:
+
+```powershell
+pwsh -NoProfile -File scripts/install-postagem-redes-shortcut.ps1 `
+  -PortalUrl 'http://<servidor-n8n>:5678/webhook/postagem-redes'
+```
 
 ## Inserção de conteúdo
 
@@ -41,9 +48,9 @@ As imagens podem ser PNG, JPG/JPEG ou WEBP. A ordenação usa o nome do arquivo;
 
 No painel, escolha **Criar publicação**, informe responsável, título e legenda, e envie de 1 a 10 imagens. O workflow cria uma pasta segura na biblioteca e registra o item como pendente. Esse caminho existe para demandas urgentes que ainda não estão organizadas na biblioteca — sem depender de planilha.
 
-## Variáveis do n8n
+## Variáveis de ambiente do container
 
-Crie as variáveis em **Settings → Variables**. Os valores iniciais abaixo preservam a operação em modo seguro até a homologação de cada integração.
+Na instância operacional, essas chaves são variáveis de ambiente carregadas pelo Docker. Elas não devem ser preenchidas no export, em Code nodes ou no Git. Os valores iniciais abaixo preservam a operação em modo seguro até a homologação de cada integração.
 
 | Variável | Valor inicial | Finalidade |
 |---|---|---|
@@ -55,7 +62,7 @@ Crie as variáveis em **Settings → Variables**. Os valores iniciais abaixo pre
 | `SOCIAL_OLLAMA_MODEL` | `llama3.2` | Modelo local do último fallback. |
 | `SOCIAL_PUBLISH_ENABLED` | `false` | Trava global: nenhum conteúdo é enviado a redes enquanto estiver falso. |
 | `SOCIAL_META_ENABLED` | `false` | Libera a rota Meta somente após credencial e IDs válidos. |
-| `SOCIAL_META_GRAPH_VERSION` | `v23.0` | Versão da Graph API usada pelos nós Meta. |
+| `SOCIAL_META_GRAPH_VERSION` | `v25.0` | Versão da Graph API usada pelos nós Meta. |
 | `SOCIAL_META_INSTAGRAM_ACCOUNT_ID` | vazio | ID da conta profissional do Instagram. |
 | `SOCIAL_META_PAGE_ID` | vazio | ID da Página do Facebook. |
 | `SOCIAL_LINKEDIN_ENABLED` | `false` | Libera a rota multi-imagem do LinkedIn. |
@@ -81,11 +88,15 @@ As contas sociais devem ser conectadas no cofre criptografado de credenciais do 
 
 ### Sequência de homologação
 
-1. Mantenha `SOCIAL_PUBLISH_ENABLED=false` durante toda a configuração.
+1. Mantenha `SOCIAL_PUBLISH_ENABLED=false` durante a configuração e a primeira importação.
 2. Configure uma rede de teste por vez, com credenciais e IDs somente na instância n8n.
 3. Para Meta e qualquer fluxo que baixa a mídia remotamente, publique um endpoint **HTTPS acessível pela plataforma**. Um endereço interno da LAN não é suficiente.
 4. Faça uma publicação de teste, confirme o ID remoto e o permalink no Ledger e valide o comportamento de retry.
-5. Habilite a variável específica da rede testada. Só libere `SOCIAL_PUBLISH_ENABLED=true` depois de repetir a validação em todas as redes desejadas.
+5. Habilite a flag específica da rede testada. Depois da primeira confirmação, `SOCIAL_PUBLISH_ENABLED=true` pode coexistir com flags individuais: uma rede pendente fica bloqueada e as demais continuam independentes.
+
+### Gate conhecido: mídia do Instagram
+
+O Instagram não recebe os bytes diretamente do n8n neste desenho; a Meta baixa cada `image_url`. A URL precisa ser HTTPS, pública para o crawler da Meta e responder com baixa latência. Em uma campanha de seis imagens, um túnel gratuito respondeu ao navegador, mas a Meta retornou timeout ao baixar a mídia. Antes de usar Instagram em rotina, hospede derivados otimizados (por exemplo, JPEG 1080 px de 300–800 KB) em uma origem HTTPS estável e repita o teste com conteúdo inédito.
 
 ## Ledger e escopo dos exports
 

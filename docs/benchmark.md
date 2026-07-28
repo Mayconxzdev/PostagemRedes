@@ -1,6 +1,6 @@
 # Benchmark de arquitetura — Postagem Redes
 
-Pesquisa realizada em 15 de julho de 2026, usando templates públicos atuais do n8n e a documentação da instalação n8n 2.27.3.
+Pesquisa iniciada em 15 de julho de 2026 e revisada em 28 de julho de 2026, usando templates públicos do n8n e a instância local n8n 2.32.5.
 
 ## Padrões que se repetem
 
@@ -16,7 +16,7 @@ Pesquisa realizada em 15 de julho de 2026, usando templates públicos atuais do 
 
 - Não depende de Google Sheets como tela de trabalho: o chefe visualiza slides, reorganiza, edita texto, sobe conteúdo rápido e aprova no navegador.
 - Mantém as quatro redes definidas para a empresa, em vez de um template genérico com “uma imagem/um texto”.
-- Faz publicação de carrossel de verdade: containers no Instagram, fotos não publicadas no Facebook, URNs de imagem no LinkedIn e mídia + sequência no X.
+- Implementa os contratos reais de carrossel: containers no Instagram, fotos não publicadas no Facebook, URNs de imagem no LinkedIn e mídia + sequência no X. Facebook foi comprovado em teste controlado; as demais redes mantêm seus gates externos documentados.
 - Mantém proteção operacional explícita: trava global, flags por provedor/rede, URLs assinadas para mídia externa, reserva idempotente, retry limitado e histórico interno.
 - Usa nós atuais da própria instância e deixa HTTP Request somente onde o n8n não possui uma operação nativa completa.
 

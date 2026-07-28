@@ -22,7 +22,7 @@ sequenceDiagram
     L-->>P: Conteúdos pendentes
     U->>P: Revisa slides, legenda e redes
     P->>Q: Grava operador, decisão e data
-    Note over P,R: Sem credenciais homologadas, o fluxo termina aqui
+    Note over P,R: Cada rede só segue quando seu gate de credencial e mídia está pronto
     Q->>R: Entrega somente aprovado/agendado
     R->>S: Publica conforme regras da plataforma
     S-->>Q: ID remoto, permalink e status
@@ -65,11 +65,11 @@ postagem-redes/
 
 ## Publicação por plataforma
 
-`Portal: Ações` é o orquestrador real. A cada cinco minutos ele reserva exclusivamente entregas `aprovado` ou `agendado`, uma rede por vez, antes de qualquer chamada externa. A trava `SOCIAL_PUBLISH_ENABLED=false` impede o disparo até a homologação. Cada rede recebe um `dispatchId`, três tentativas no máximo com espera exponencial, registro no `state.json` e espelho no Ledger do n8n.
+`Portal: Ações` é o orquestrador real. A cada cinco minutos ele reserva exclusivamente entregas `aprovado` ou `agendado`, uma rede por vez, antes de qualquer chamada externa. A trava global e as flags por rede permitem manter um destino em homologação sem bloquear os demais. Cada rede recebe um `dispatchId`, retry limitado quando faz sentido, registro no `state.json` e espelho no Ledger do n8n.
 
 | Plataforma | Adaptação necessária |
 |---|---|
-| Instagram | Cria containers por slide, cria o carrossel, aguarda, consulta `status_code` e só publica quando a Meta retornar `FINISHED`. Requer mídia HTTPS pública; quando a assinatura estiver ligada, usa links temporários assinados. |
+| Instagram | Cria containers por slide, cria o carrossel, aguarda, consulta `status_code` e só publica quando a Meta retornar `FINISHED`. Requer mídia HTTPS pública e rápida para o downloader da Meta; quando a assinatura estiver ligada, usa links temporários assinados. |
 | Facebook | Envia fotos não publicadas, reúne IDs de mídia e cria o post da Página com `attached_media`. |
 | LinkedIn | Lê cada imagem no volume n8n, inicializa/upload binário, reúne URNs e cria post multi-imagem na Página da empresa. |
 | X | Lê/upload da primeira mídia pela API v2, publica o post inicial e encadeia até três respostas com o nó nativo X v2. |
@@ -81,7 +81,7 @@ O ambiente operacional mantém somente três workflows ativos para Postagem Rede
 | Workflow | Responsabilidade em produção |
 |---|---|
 | `Portal Visual` | Renderiza a biblioteca, o editor, prévias e URLs de mídia assinadas quando o domínio público estiver configurado. Um nó de documentação deixa explícito que não há publicação nesse fluxo. |
-| `Portal: Ações` | Recebe ações do portal, gera IA com fallback OpenAI → Gemini → Ollama, reserva a fila, aplica retry, salva auditoria, espelha o Ledger nativo e contém as rotas para quatro redes. As chamadas externas permanecem bloqueadas até a homologação das contas, da mídia HTTPS e das variáveis de ativação. O canvas é dividido visualmente em Portal/IA, Fila, APIs oficiais e Resultado. |
+| `Portal: Ações` | Recebe ações do portal, gera IA com fallback OpenAI → Gemini → Ollama, reserva a fila, aplica retry, salva auditoria, espelha o Ledger nativo e contém as rotas para quatro redes. Cada rota passa pelo seu gate de credencial, mídia HTTPS e variável de ativação. O canvas é dividido visualmente em Portal/IA, Fila, APIs oficiais e Resultado. |
 | `Portal: Arquivos` | Entrega somente arquivos pertencentes ao conteúdo solicitado; no modo público exige assinatura HMAC e expiração curta. Um nó de documentação descreve a proteção do endpoint. |
 
 O estado por rede fica em `deliveries`: `draft`, `queued`, `dispatching`, `retry`, `published`, `failed` ou `blocked`. Esse modelo permite retomar uma única rede sem repetir uma publicação já confirmada em outra. O `dispatchId` é reservado antes da chamada externa; confirmações só atualizam a entrega correspondente.

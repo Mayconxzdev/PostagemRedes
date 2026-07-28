@@ -1,129 +1,112 @@
 {
   "name": "Postagem Redes — Portal: Ações",
-  "active": false,
-  "settings": {
-    "executionOrder": "v1",
-    "availableInMCP": false
-  },
-  "pinData": {},
+  "description": null,
+  "isArchived": false,
   "nodes": [
     {
-      "id": "canvas-summary",
+      "parameters": {
+        "content": "## Produção controlada\n\n**Uma fila, quatro redes, três provedores de IA.**\n\n- Ações do portal sempre exigem revisão humana.\n- A fila só dispara quando SOCIAL_PUBLISH_ENABLED=true.\n- Cada entrega é reservada antes da chamada externa; falhas recebem até 3 tentativas com espera exponencial.\n- Credenciais ficam somente no cofre do n8n, nunca neste workflow.",
+        "height": 270,
+        "width": 550,
+        "color": 6
+      },
       "name": "Orquestrador de publicação",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "parameters": {
-        "content": "## Produção controlada\n\n**Uma fila, quatro redes, três provedores de IA.**\n\n- Ações do portal sempre exigem revisão humana.\n- A fila só dispara quando SOCIAL_PUBLISH_ENABLED=true.\n- Cada entrega é reservada antes da chamada externa; falhas recebem até 3 tentativas com espera exponencial.\n- Credenciais ficam somente no cofre do n8n, nunca neste workflow.",
-        "width": 550,
-        "height": 270,
-        "color": 6
-      },
       "position": [
-        -650,
-        -470
+        -656,
+        -464
       ]
     },
     {
-      "id": "canvas-ia",
+      "parameters": {
+        "content": "## 01 · Portal e IA\n\nA sugestão nunca publica conteúdo.\n\nOpenAI é o provedor primário; Gemini e Ollama só entram quando a variável de fallback correspondente estiver habilitada.",
+        "height": 180,
+        "width": 510,
+        "color": 4
+      },
       "name": "01 · Portal e IA",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "parameters": {
-        "content": "## 01 · Portal e IA\n\nA sugestão nunca publica conteúdo.\n\nOpenAI é o provedor primário; Gemini e Ollama só entram quando a variável de fallback correspondente estiver habilitada.",
-        "width": 510,
-        "height": 180,
-        "color": 4
-      },
       "position": [
-        180,
-        -470
+        192,
+        -464
       ]
     },
     {
-      "id": "canvas-fila",
+      "parameters": {
+        "content": "## 02 · Fila, reserva e validação\n\nCada destino recebe um `dispatchId` antes da chamada externa. A trava global e as variáveis por rede são verificadas antes de publicar.",
+        "height": 185,
+        "width": 560,
+        "color": 5
+      },
       "name": "02 · Fila protegida",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "parameters": {
-        "content": "## 02 · Fila, reserva e validação\n\nCada destino recebe um `dispatchId` antes da chamada externa. A trava global e as variáveis por rede são verificadas antes de publicar.",
-        "width": 560,
-        "height": 185,
-        "color": 5
-      },
       "position": [
-        -650,
-        340
+        -656,
+        352
       ]
     },
     {
-      "id": "canvas-redes",
+      "parameters": {
+        "content": "## 03 · APIs oficiais\n\nCada faixa segue a regra própria da plataforma. HTTP Request fica apenas onde não há operação nativa completa no n8n.",
+        "height": 165,
+        "width": 500,
+        "color": 2
+      },
       "name": "03 · Publicadores por rede",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "parameters": {
-        "content": "## 03 · APIs oficiais\n\nCada faixa segue a regra própria da plataforma. HTTP Request fica apenas onde não há operação nativa completa no n8n.",
-        "width": 500,
-        "height": 165,
-        "color": 2
-      },
       "position": [
-        1550,
-        120
+        1552,
+        128
       ]
     },
     {
-      "id": "canvas-resultados",
+      "parameters": {
+        "content": "## 04 · Resultado por entrega\n\nSucesso e falha são gravados no estado e no Ledger nativo. Falhas têm até três tentativas com espera exponencial.",
+        "height": 170,
+        "width": 520,
+        "color": 3
+      },
       "name": "04 · Resultado e recuperação",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "parameters": {
-        "content": "## 04 · Resultado por entrega\n\nSucesso e falha são gravados no estado e no Ledger nativo. Falhas têm até três tentativas com espera exponencial.",
-        "width": 520,
-        "height": 170,
-        "color": 3
-      },
       "position": [
-        2700,
-        510
+        2704,
+        512
       ]
     },
     {
-      "id": "portal-actions-webhook",
-      "name": "Webhook do portal",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
       "parameters": {
         "httpMethod": "POST",
         "path": "postagem-redes-api",
         "responseMode": "responseNode",
         "options": {}
       },
+      "name": "Webhook do portal",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
       "position": [
-        -620,
-        0
-      ],
-      "webhookId": "postagem-redes-postagem-redes-api"
-    },
-    {
-      "id": "portal-actions-process",
-      "name": "Processar ação do portal",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "parameters": {
-        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst item=$input.first(); const body=item.json.body||item.json||{}; const action=safeText(body.action,30); const operator=safeText(body.operator,80); if(!operator) throw new Error('Informe o nome do responsável.');\nconst now=new Date().toISOString(); const {state,items}=scan();\nif(action==='generate'){\n const id=safeText(body.contentId,130); const content=items.find(x=>x.id===id); if(!content) throw new Error('Conteúdo não encontrado. Atualize a página.');\n if(String($vars.SOCIAL_AI_ENABLED||'').toLowerCase()!=='true') return [{json:{ok:false,route:'respond',message:'A IA está desativada. Configure SOCIAL_AI_ENABLED=true e a credencial OpenAI no workflow Portal: Ações.'}}];\n const brief=safeText(body.brief??content.brief,1600); const prompt=['Você é redator de marketing B2B industrial em português do Brasil.','Crie apenas uma sugestão para revisão humana; não invente especificações, certificações, clientes, preços ou resultados.','Retorne JSON válido sem markdown com as chaves: baseCaption (string), variants (objeto com instagram, facebook, linkedin e xThread; xThread é array de 1 a 4 strings), hashtags (array até 12), reviewNotes (array até 5).','Adapte tom e tamanho à rede. Inclua CTA discreto quando fizer sentido.','Título interno: '+content.title,'Brief: '+brief,'Legenda atual: '+content.caption,'Quantidade de slides: '+content.slides.length].join('\\n');\n return [{json:{route:'ai',contentId:id,operator,brief,aiPrompt:prompt}}];\n}\nif(action==='upload'){\n const title=safeText(body.title,120); const caption=safeText(body.caption,5000); if(!title||!caption) throw new Error('Título e legenda são obrigatórios.');\n let order=[]; try{order=JSON.parse(body.order||'[]')}catch{} const rank=new Map(order.map((key,index)=>[String(key),index]));\n const entries=Object.entries(item.binary||{}).filter(([,file])=>['image/png','image/jpeg','image/webp'].includes(String(file.mimeType||'').toLowerCase())); if(entries.length<1||entries.length>10) throw new Error('Envie de 1 a 10 imagens PNG, JPG ou WEBP.');\n entries.sort(([a],[b])=>(rank.get(a)??999)-(rank.get(b)??999)||a.localeCompare(b));\n const base='rapido-'+Date.now()+'-'+slug(title).slice(0,24); const dir=path.join(INPUT,base); fs.mkdirSync(dir,{recursive:false}); try{for(let index=0;index<entries.length;index++){const [binaryName,file]=entries[index];const ext=file.mimeType==='image/png'?'.png':file.mimeType==='image/webp'?'.webp':'.jpg';const buffer=await this.helpers.getBinaryDataBuffer(0,binaryName);fs.writeFileSync(path.join(dir,String(index+1).padStart(2,'0')+ext),buffer)}}catch(error){try{fs.rmSync(dir,{recursive:true,force:true})}catch{}throw new Error('Não foi possível gravar as imagens enviadas. Tente novamente.')} fs.writeFileSync(path.join(dir,'Texto.txt'),caption,'utf8'); const id=slug(base); state.records[id]={title,caption,status:'pendente',networks:[],deliveries:{},updatedAt:now,audit:[{at:now,operator,action:'criou conteúdo rápido',comment:entries.length+' slide(s) organizado(s) antes do envio.'}]}; saveState(state); return [{json:{ok:true,route:'respond',message:'Publicação criada e enviada para aprovação.',id}}];\n}\nconst id=safeText(body.contentId,130); const content=items.find(x=>x.id===id); if(!content) throw new Error('Conteúdo não encontrado. Atualize a página.'); const previous=state.records[id]||{};\nif(action==='reorder'){\n let requested=[]; try{requested=JSON.parse(body.slides||'[]')}catch{} if(!Array.isArray(requested)||requested.length!==content.slides.length||new Set(requested).size!==content.slides.length||requested.some(file=>!content.slides.includes(file))) throw new Error('A nova ordem de slides é inválida. Atualize a página e tente novamente.');\n const dir=path.join(INPUT,content.folder); const token=Date.now()+'-'+Math.random().toString(36).slice(2,8); const moves=requested.map((file,index)=>({from:path.join(dir,file),temp:path.join(dir,'.reordenar-'+token+'-'+index+path.extname(file)),to:path.join(dir,String(index+1).padStart(2,'0')+path.extname(file))}));\n try{moves.forEach(move=>fs.renameSync(move.from,move.temp));moves.forEach(move=>fs.renameSync(move.temp,move.to))}catch(error){try{moves.forEach(move=>{if(fs.existsSync(move.temp))fs.renameSync(move.temp,move.from)})}catch{}throw new Error('Não foi possível reorganizar os slides. Nenhuma decisão foi salva.');}\n state.records[id]={...previous,title:content.title,caption:content.caption,brief:content.brief||'',status:content.status,networks:content.networks||[],scheduleAt:content.scheduleAt||'',updatedAt:now,audit:[...(previous.audit||[]),{at:now,operator,action:'reorganizou slides',comment:'Ordem do carrossel atualizada no portal.'}]}; saveState(state); return [{json:{ok:true,route:'respond',message:'Ordem do carrossel atualizada.'}}];\n}\nif(action!=='save') throw new Error('Ação não reconhecida.'); const title=safeText(body.title,120); const caption=safeText(body.caption,5000); const brief=safeText(body.brief,1600); const status=safeText(body.status,30); if(!title) throw new Error('Informe o título interno da publicação.'); if(!allowedStatuses.has(status)||status==='publicado') throw new Error('Status inválido.'); if(!caption) throw new Error('A legenda não pode ficar vazia.'); if(status==='agendado'&&!safeText(body.scheduleAt,40)) throw new Error('Informe data e hora para o agendamento.'); let networks=[]; try{networks=JSON.parse(body.networks||'[]')}catch{} networks=[...new Set(networks.filter(x=>['instagram','facebook','linkedin','x'].includes(x)))]; if((status==='aprovado'||status==='agendado')&&!networks.length) throw new Error('Selecione pelo menos uma rede.'); const comment=safeText(body.comment,1000); const deliveries={}; for(const network of networks){const prior=previous.deliveries?.[network]||{}; deliveries[network]={status:(status==='aprovado'||status==='agendado')?'queued':'draft',attempts:0,queuedAt:(status==='aprovado'||status==='agendado')?now:'',lastRemoteId:'',lastPermalink:'',lastError:'',...((prior.status==='published'&&previous.caption===caption&&previous.title===title)?prior:{})};} state.records[id]={...previous,title,caption,brief,status,networks,deliveries,scheduleAt:status==='agendado'?safeText(body.scheduleAt,40):'',updatedAt:now,audit:[...(previous.audit||[]),{at:now,operator,action:status,comment,networks}]}; saveState(state); return [{json:{ok:true,route:'respond',message:status==='aprovado'?'Conteúdo aprovado e adicionado à fila de homologação.':status==='agendado'?'Conteúdo aprovado e agendado para a fila.':'Atualização salva com sucesso.'}}];"
-      },
-      "position": [
-        -390,
+        -624,
         0
       ]
     },
     {
-      "id": "portal-actions-router",
-      "name": "Roteador da ação",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.4,
       "parameters": {
-        "mode": "rules",
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst item=$input.first(); const body=item.json.body||item.json||{}; const action=safeText(body.action,30); const operator=safeText(body.operator,80); if(!operator) throw new Error('Informe o nome do responsável.');\nconst now=new Date().toISOString(); const {state,items}=scan();\nif(action==='generate'){\n const id=safeText(body.contentId,130); const content=items.find(x=>x.id===id); if(!content) throw new Error('Conteúdo não encontrado. Atualize a página.');\n if(String($env.SOCIAL_AI_ENABLED||'').toLowerCase()!=='true') return [{json:{ok:false,route:'respond',message:'A IA está desativada. Configure SOCIAL_AI_ENABLED=true e a credencial OpenAI no workflow Portal: Ações.'}}];\n const brief=safeText(body.brief??content.brief,1600); const prompt=['Você é redator de marketing B2B industrial em português do Brasil.','Crie apenas uma sugestão para revisão humana; não invente especificações, certificações, clientes, preços ou resultados.','Retorne JSON válido sem markdown com as chaves: baseCaption (string), variants (objeto com instagram, facebook, linkedin e xThread; xThread é array de 1 a 4 strings), hashtags (array até 12), reviewNotes (array até 5).','Adapte tom e tamanho à rede. Inclua CTA discreto quando fizer sentido.','Título interno: '+content.title,'Brief: '+brief,'Legenda atual: '+content.caption,'Quantidade de slides: '+content.slides.length].join('\\n');\n return [{json:{route:'ai',contentId:id,operator,brief,aiPrompt:prompt}}];\n}\nif(action==='upload'){\n const title=safeText(body.title,120); const caption=safeText(body.caption,5000); if(!title||!caption) throw new Error('Título e legenda são obrigatórios.');\n let order=[]; try{order=JSON.parse(body.order||'[]')}catch{} const rank=new Map(order.map((key,index)=>[String(key),index]));\n const entries=Object.entries(item.binary||{}).filter(([,file])=>['image/png','image/jpeg','image/webp'].includes(String(file.mimeType||'').toLowerCase())); if(entries.length<1||entries.length>10) throw new Error('Envie de 1 a 10 imagens PNG, JPG ou WEBP.');\n entries.sort(([a],[b])=>(rank.get(a)??999)-(rank.get(b)??999)||a.localeCompare(b));\n const base='rapido-'+Date.now()+'-'+slug(title).slice(0,24); const dir=path.join(INPUT,base); fs.mkdirSync(dir,{recursive:false}); try{for(let index=0;index<entries.length;index++){const [binaryName,file]=entries[index];const ext=file.mimeType==='image/png'?'.png':file.mimeType==='image/webp'?'.webp':'.jpg';const buffer=await this.helpers.getBinaryDataBuffer(0,binaryName);fs.writeFileSync(path.join(dir,String(index+1).padStart(2,'0')+ext),buffer)}}catch(error){try{fs.rmSync(dir,{recursive:true,force:true})}catch{}throw new Error('Não foi possível gravar as imagens enviadas. Tente novamente.')} fs.writeFileSync(path.join(dir,'Texto.txt'),caption,'utf8'); const id=slug(base); state.records[id]={title,caption,status:'pendente',networks:[],deliveries:{},updatedAt:now,audit:[{at:now,operator,action:'criou conteúdo rápido',comment:entries.length+' slide(s) organizado(s) antes do envio.'}]}; saveState(state); return [{json:{ok:true,route:'respond',message:'Publicação criada e enviada para aprovação.',id}}];\n}\nconst id=safeText(body.contentId,130); const content=items.find(x=>x.id===id); if(!content) throw new Error('Conteúdo não encontrado. Atualize a página.'); const previous=state.records[id]||{};\nif(action==='reorder'){\n let requested=[]; try{requested=JSON.parse(body.slides||'[]')}catch{} if(!Array.isArray(requested)||requested.length!==content.slides.length||new Set(requested).size!==content.slides.length||requested.some(file=>!content.slides.includes(file))) throw new Error('A nova ordem de slides é inválida. Atualize a página e tente novamente.');\n const dir=path.join(INPUT,content.folder); const token=Date.now()+'-'+Math.random().toString(36).slice(2,8); const moves=requested.map((file,index)=>({from:path.join(dir,file),temp:path.join(dir,'.reordenar-'+token+'-'+index+path.extname(file)),to:path.join(dir,String(index+1).padStart(2,'0')+path.extname(file))}));\n try{moves.forEach(move=>fs.renameSync(move.from,move.temp));moves.forEach(move=>fs.renameSync(move.temp,move.to))}catch(error){try{moves.forEach(move=>{if(fs.existsSync(move.temp))fs.renameSync(move.temp,move.from)})}catch{}throw new Error('Não foi possível reorganizar os slides. Nenhuma decisão foi salva.');}\n state.records[id]={...previous,title:content.title,caption:content.caption,brief:content.brief||'',status:content.status,networks:content.networks||[],scheduleAt:content.scheduleAt||'',updatedAt:now,audit:[...(previous.audit||[]),{at:now,operator,action:'reorganizou slides',comment:'Ordem do carrossel atualizada no portal.'}]}; saveState(state); return [{json:{ok:true,route:'respond',message:'Ordem do carrossel atualizada.'}}];\n}\nif(action!=='save') throw new Error('Ação não reconhecida.'); const title=safeText(body.title,120); const caption=safeText(body.caption,5000); const brief=safeText(body.brief,1600); const status=safeText(body.status,30); if(!title) throw new Error('Informe o título interno da publicação.'); if(!allowedStatuses.has(status)||['publicado','parcial','falhou'].includes(status)) throw new Error('Status inválido.'); if(!caption) throw new Error('A legenda não pode ficar vazia.'); if(status==='agendado'&&!safeText(body.scheduleAt,40)) throw new Error('Informe data e hora para o agendamento.'); const rawNetworks=body.networks??[]; let networks=[]; if(Array.isArray(rawNetworks)) networks=rawNetworks; else if(typeof rawNetworks==='string'){const normalized=rawNetworks.trim(); try{networks=JSON.parse(normalized)}catch{networks=normalized.split(',')}} else networks=[rawNetworks]; if(!Array.isArray(networks)) networks=[networks]; networks=[...new Set(networks.map(x=>safeText(x,20)).filter(x=>['instagram','facebook','linkedin','x'].includes(x)))]; if((status==='aprovado'||status==='agendado')&&!networks.length) throw new Error('Selecione pelo menos uma rede.'); const comment=safeText(body.comment,1000); const deliveries={}; for(const network of networks){const prior=previous.deliveries?.[network]||{}; deliveries[network]={status:(status==='aprovado'||status==='agendado')?'queued':'draft',attempts:0,queuedAt:(status==='aprovado'||status==='agendado')?now:'',lastRemoteId:'',lastPermalink:'',lastError:'',...((prior.status==='published'&&previous.caption===caption&&previous.title===title)?prior:{})};} state.records[id]={...previous,title,caption,brief,status,networks,deliveries,scheduleAt:status==='agendado'?safeText(body.scheduleAt,40):'',updatedAt:now,audit:[...(previous.audit||[]),{at:now,operator,action:status,comment,networks}]}; saveState(state); return [{json:{ok:true,route:'respond',message:status==='aprovado'?'Conteúdo aprovado e adicionado à fila de homologação.':status==='agendado'?'Conteúdo aprovado e agendado para a fila.':'Atualização salva com sucesso.'}}];"
+      },
+      "name": "Processar ação do portal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        0
+      ]
+    },
+    {
+      "parameters": {
         "rules": {
           "values": [
             {
@@ -131,7 +114,8 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -142,7 +126,8 @@
                       "operation": "equals"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "Gerar IA"
@@ -152,7 +137,8 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -163,7 +149,8 @@
                       "operation": "equals"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "Responder"
@@ -175,59 +162,54 @@
           "ignoreCase": false
         }
       },
+      "name": "Roteador da ação",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
       "position": [
-        -135,
+        -128,
         0
       ]
     },
     {
-      "id": "portal-actions-openai",
-      "name": "OpenAI · sugestão primária",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 2.3,
       "parameters": {
-        "resource": "text",
-        "operation": "response",
         "modelId": {
           "mode": "id",
-          "value": "={{ $vars.SOCIAL_AI_MODEL || \"gpt-5-mini\" }}"
+          "value": "={{ $env.SOCIAL_AI_MODEL || \"gpt-5-mini\" }}"
         },
         "responses": {
           "values": [
             {
-              "type": "text",
-              "role": "user",
               "content": "={{ $json.aiPrompt }}"
             }
           ]
         },
-        "simplify": true,
+        "builtInTools": {},
         "options": {
           "instructions": "Retorne somente JSON válido conforme o pedido; não use markdown.",
           "maxTokens": 1800
         }
       },
+      "name": "OpenAI · sugestão primária",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
       "position": [
-        130,
-        -150
+        144,
+        -144
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "ai-gemini-enabled",
-      "name": "Fallback Gemini habilitado?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
       "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
-              "leftValue": "={{ String($vars.SOCIAL_AI_GEMINI_FALLBACK_ENABLED || \"\").toLowerCase() === \"true\" }}",
+              "leftValue": "={{ String($env.SOCIAL_AI_GEMINI_FALLBACK_ENABLED || \"\").toLowerCase() === \"true\" }}",
               "rightValue": true,
               "operator": {
                 "type": "boolean",
@@ -235,42 +217,42 @@
                 "singleValue": true
               }
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
+      "name": "Fallback Gemini habilitado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
       "position": [
-        390,
+        400,
         -80
       ]
     },
     {
-      "id": "portal-actions-gemini",
-      "name": "Gemini · fallback",
-      "type": "@n8n/n8n-nodes-langchain.googleGemini",
-      "typeVersion": 1.2,
       "parameters": {
-        "resource": "text",
-        "operation": "message",
         "modelId": {
           "mode": "id",
-          "value": "={{ $vars.SOCIAL_GEMINI_MODEL || \"gemini-3.5-flash\" }}"
+          "value": "={{ $env.SOCIAL_GEMINI_MODEL || \"gemini-3.5-flash\" }}"
         },
         "messages": {
           "values": [
             {
-              "role": "user",
               "content": "={{ $(\"Processar ação do portal\").item.json.aiPrompt }}"
             }
           ]
         },
-        "simplify": true,
         "jsonOutput": true,
+        "builtInTools": {},
         "options": {
           "systemMessage": "Retorne somente JSON válido conforme o pedido; não use markdown.",
           "maxOutputTokens": 1800
         }
       },
+      "name": "Gemini · fallback",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
       "position": [
         640,
         -160
@@ -278,20 +260,17 @@
       "onError": "continueErrorOutput"
     },
     {
-      "id": "ai-ollama-enabled",
-      "name": "Fallback Ollama habilitado?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
       "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
-              "leftValue": "={{ String($vars.SOCIAL_AI_OLLAMA_FALLBACK_ENABLED || \"\").toLowerCase() === \"true\" }}",
+              "leftValue": "={{ String($env.SOCIAL_AI_OLLAMA_FALLBACK_ENABLED || \"\").toLowerCase() === \"true\" }}",
               "rightValue": true,
               "operator": {
                 "type": "boolean",
@@ -299,82 +278,74 @@
                 "singleValue": true
               }
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
+      "name": "Fallback Ollama habilitado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
       "position": [
-        900,
-        -60
+        912,
+        -64
       ]
     },
     {
-      "id": "portal-actions-ollama",
-      "name": "Ollama · fallback local",
-      "type": "@n8n/n8n-nodes-langchain.ollama",
-      "typeVersion": 1,
       "parameters": {
-        "resource": "text",
-        "operation": "message",
         "modelId": {
           "mode": "id",
-          "value": "={{ $vars.SOCIAL_OLLAMA_MODEL || \"llama3.2\" }}"
+          "value": "={{ $env.SOCIAL_OLLAMA_MODEL || \"llama3.2\" }}"
         },
         "messages": {
           "values": [
             {
-              "role": "user",
               "content": "={{ $(\"Processar ação do portal\").item.json.aiPrompt }}"
             }
           ]
         },
-        "simplify": true,
         "options": {
           "system": "Retorne somente JSON válido conforme o pedido; não use markdown.",
           "temperature": 0.3,
           "num_predict": 1800
         }
       },
+      "name": "Ollama · fallback local",
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
       "position": [
-        1150,
+        1152,
         -160
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "portal-actions-ai-save",
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst request=$items('Processar')[0]?.json||{}; const id=safeText(request.contentId,130); const operator=safeText(request.operator,80)||'Sistema'; const {state,items}=scan(); const content=items.find(x=>x.id===id); if(!content) throw new Error('Conteúdo não encontrado ao salvar a sugestão.');\n const candidate=$json.output_text||$json.text||$json.content||$json.output?.flatMap(x=>x.content||[]).map(x=>x.text||'').join('')||$json.candidates?.[0]?.content?.parts?.map(x=>x.text||'').join('')||''; let draft; try{draft=JSON.parse(candidate)}catch{throw new Error('A IA não retornou um JSON válido. Nenhuma legenda foi alterada.')}\nconst text=v=>safeText(v,5000); const variants=draft&&typeof draft.variants==='object'?draft.variants:{}; const normalized={baseCaption:text(draft.baseCaption),variants:{instagram:text(variants.instagram),facebook:text(variants.facebook),linkedin:text(variants.linkedin),xThread:Array.isArray(variants.xThread)?variants.xThread.map(v=>text(v,280)).filter(Boolean).slice(0,4):[]},hashtags:Array.isArray(draft.hashtags)?draft.hashtags.map(v=>text(v,80)).filter(Boolean).slice(0,12):[],reviewNotes:Array.isArray(draft.reviewNotes)?draft.reviewNotes.map(v=>text(v,240)).filter(Boolean).slice(0,5):[],generatedAt:new Date().toISOString(),model:safeText($json.model||$json.model_id||$env.SOCIAL_AI_MODEL||'OpenAI',80)}; if(!normalized.baseCaption) throw new Error('A IA não retornou uma legenda-base válida. Nenhuma alteração foi salva.');\nconst previous=state.records[id]||{}; const now=new Date().toISOString(); state.records[id]={...previous,brief:safeText(request.brief,1600),aiDraft:normalized,updatedAt:now,audit:[...(previous.audit||[]),{at:now,operator,action:'gerou sugestão IA',comment:'Rascunho salvo para revisão humana; a legenda atual não foi substituída.'}]}; saveState(state); return [{json:{ok:true,route:'respond',message:'Sugestão da IA salva para revisão. A legenda atual não foi alterada.',draft:normalized}}];"
+      },
       "name": "Validar e salvar sugestão IA",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst request=$items('Processar')[0]?.json||{}; const id=safeText(request.contentId,130); const operator=safeText(request.operator,80)||'Sistema'; const {state,items}=scan(); const content=items.find(x=>x.id===id); if(!content) throw new Error('Conteúdo não encontrado ao salvar a sugestão.');\n const candidate=$json.output_text||$json.text||$json.content||$json.output?.flatMap(x=>x.content||[]).map(x=>x.text||'').join('')||$json.candidates?.[0]?.content?.parts?.map(x=>x.text||'').join('')||''; let draft; try{draft=JSON.parse(candidate)}catch{throw new Error('A IA não retornou um JSON válido. Nenhuma legenda foi alterada.')}\nconst text=v=>safeText(v,5000); const variants=draft&&typeof draft.variants==='object'?draft.variants:{}; const normalized={baseCaption:text(draft.baseCaption),variants:{instagram:text(variants.instagram),facebook:text(variants.facebook),linkedin:text(variants.linkedin),xThread:Array.isArray(variants.xThread)?variants.xThread.map(v=>text(v,280)).filter(Boolean).slice(0,4):[]},hashtags:Array.isArray(draft.hashtags)?draft.hashtags.map(v=>text(v,80)).filter(Boolean).slice(0,12):[],reviewNotes:Array.isArray(draft.reviewNotes)?draft.reviewNotes.map(v=>text(v,240)).filter(Boolean).slice(0,5):[],generatedAt:new Date().toISOString(),model:safeText($json.model||$json.model_id||$vars.SOCIAL_AI_MODEL||'OpenAI',80)}; if(!normalized.baseCaption) throw new Error('A IA não retornou uma legenda-base válida. Nenhuma alteração foi salva.');\nconst previous=state.records[id]||{}; const now=new Date().toISOString(); state.records[id]={...previous,brief:safeText(request.brief,1600),aiDraft:normalized,updatedAt:now,audit:[...(previous.audit||[]),{at:now,operator,action:'gerou sugestão IA',comment:'Rascunho salvo para revisão humana; a legenda atual não foi substituída.'}]}; saveState(state); return [{json:{ok:true,route:'respond',message:'Sugestão da IA salva para revisão. A legenda atual não foi alterada.',draft:normalized}}];"
-      },
       "position": [
-        1430,
-        -150
+        1440,
+        -144
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "ai-failure",
-      "name": "Registrar indisponibilidade da IA",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
       "parameters": {
         "jsCode": "return [{json:{ok:false,route:'respond',message:'Não foi possível gerar a sugestão. Revise as credenciais OpenAI/Gemini/Ollama ou tente novamente.'}}];"
       },
+      "name": "Registrar indisponibilidade da IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        1420,
-        10
+        1424,
+        16
       ]
     },
     {
-      "id": "portal-actions-respond",
-      "name": "Responder ao portal",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
       "parameters": {
-        "respondWith": "firstIncomingItem",
         "options": {
           "responseHeaders": {
             "entries": [
@@ -386,133 +357,59 @@
           }
         }
       },
+      "name": "Responder ao portal",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
       "position": [
-        1690,
+        1696,
         0
       ]
     },
     {
-      "id": "schedule",
-      "name": "Schedule Trigger · a cada 5 minutos",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
       "parameters": {
         "rule": {
           "interval": [
             {
-              "field": "minutes",
-              "minutesInterval": 5
+              "field": "minutes"
             }
           ]
         }
       },
+      "name": "Schedule Trigger · a cada 5 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
       "position": [
-        -620,
-        620
+        -720,
+        624
       ]
     },
     {
-      "id": "ledger-create",
-      "name": "Garantir Data Table · Ledger",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
       "parameters": {
-        "resource": "table",
-        "operation": "create",
-        "tableName": "Postagem Redes - Ledger",
-        "columns": {
-          "column": [
-            {
-              "name": "content_id",
-              "type": "string"
-            },
-            {
-              "name": "network",
-              "type": "string"
-            },
-            {
-              "name": "status",
-              "type": "string"
-            },
-            {
-              "name": "remote_id",
-              "type": "string"
-            },
-            {
-              "name": "permalink",
-              "type": "string"
-            },
-            {
-              "name": "error",
-              "type": "string"
-            },
-            {
-              "name": "dispatch_id",
-              "type": "string"
-            },
-            {
-              "name": "occurred_at",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {
-          "createIfNotExists": true
-        }
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst enabled=String($env.SOCIAL_PUBLISH_ENABLED||'').toLowerCase()==='true'; if(!enabled) return [];\nconst now=new Date(); const nowIso=now.toISOString(); const {state,items}=scan(); const outgoing=[]; const publicMediaBase=String($env.SOCIAL_PUBLIC_MEDIA_BASE_URL||'').replace(/\\/+$/,''); const requireSignature=String($env.SOCIAL_MEDIA_REQUIRE_SIGNED_URLS||'').toLowerCase()==='true'; const signingSecret=String($env.SOCIAL_MEDIA_SIGNING_SECRET||'');\nfunction signedAssetUrl(contentId,file){if(!publicMediaBase) return ''; const base=publicMediaBase+'?id='+encodeURIComponent(contentId)+'&file='+encodeURIComponent(file); if(!requireSignature) return base; if(!signingSecret) throw new Error('SOCIAL_MEDIA_SIGNING_SECRET é obrigatório quando SOCIAL_MEDIA_REQUIRE_SIGNED_URLS=true.'); const exp=Math.floor(Date.now()/1000)+7200; const sig=crypto.createHmac('sha256',signingSecret).update(contentId+':'+file+':'+exp).digest('base64url'); return base+'&exp='+exp+'&sig='+encodeURIComponent(sig)}\nfor(const content of items){\n const due=content.status==='aprovado'||(content.status==='agendado'&&content.scheduleAt&&new Date(content.scheduleAt)<=now); if(!due) continue;\n for(const network of content.networks||[]){ const delivery=state.records[content.id]?.deliveries?.[network]; if(!delivery) continue;\n  const retryAt=delivery.retryAt?new Date(delivery.retryAt):null; const eligible=['queued','retry'].includes(delivery.status)&&(!retryAt||retryAt<=now); if(!eligible) continue;\n  delivery.status='dispatching'; delivery.attempts=Number(delivery.attempts||0)+1; delivery.dispatchId=crypto.randomUUID(); delivery.lastAttemptAt=nowIso; delivery.lastError='';\n  const variant=network==='x'?(content.aiDraft?.variants?.xThread||[]):safeText(content.aiDraft?.variants?.[network]||content.caption,5000);\n  const assetUrls=Object.fromEntries((content.slides||[]).map(file=>[file,signedAssetUrl(content.id,file)])); outgoing.push({json:{contentId:content.id,folder:content.folder,title:content.title,caption:content.caption,brief:content.brief||'',network,slides:content.slides,assetVersion:content.assetVersion,variant,dispatchId:delivery.dispatchId,attempt:delivery.attempts,publicMediaBase,assetUrls}});\n }\n if(outgoing.length) break;\n}\nif(outgoing.length){for(const payload of outgoing){const record=state.records[payload.json.contentId]; record.updatedAt=nowIso; record.audit=[...(record.audit||[]),{at:nowIso,operator:'Sistema',action:'reservou publicação',comment:'Entrega '+payload.json.network+' reservada com idempotência.',network:payload.json.network,dispatchId:payload.json.dispatchId}]} saveState(state)}\nreturn outgoing;"
       },
-      "position": [
-        -500,
-        620
-      ]
-    },
-    {
-      "id": "reserve-queue",
       "name": "Reservar entregas elegíveis",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst enabled=String($vars.SOCIAL_PUBLISH_ENABLED||'').toLowerCase()==='true'; if(!enabled) return [];\nconst now=new Date(); const nowIso=now.toISOString(); const {state,items}=scan(); const outgoing=[]; const publicMediaBase=String($vars.SOCIAL_PUBLIC_MEDIA_BASE_URL||'').replace(/\\/+$/,''); const requireSignature=String($vars.SOCIAL_MEDIA_REQUIRE_SIGNED_URLS||'').toLowerCase()==='true'; const signingSecret=String($vars.SOCIAL_MEDIA_SIGNING_SECRET||'');\nfunction signedAssetUrl(contentId,file){if(!publicMediaBase) return ''; const base=publicMediaBase+'?id='+encodeURIComponent(contentId)+'&file='+encodeURIComponent(file); if(!requireSignature) return base; if(!signingSecret) throw new Error('SOCIAL_MEDIA_SIGNING_SECRET é obrigatório quando SOCIAL_MEDIA_REQUIRE_SIGNED_URLS=true.'); const exp=Math.floor(Date.now()/1000)+7200; const sig=crypto.createHmac('sha256',signingSecret).update(contentId+':'+file+':'+exp).digest('base64url'); return base+'&exp='+exp+'&sig='+encodeURIComponent(sig)}\nfor(const content of items){\n const due=content.status==='aprovado'||(content.status==='agendado'&&content.scheduleAt&&new Date(content.scheduleAt)<=now); if(!due) continue;\n for(const network of content.networks||[]){ const delivery=state.records[content.id]?.deliveries?.[network]; if(!delivery) continue;\n  const retryAt=delivery.retryAt?new Date(delivery.retryAt):null; const eligible=['queued','retry'].includes(delivery.status)&&(!retryAt||retryAt<=now); if(!eligible) continue;\n  delivery.status='dispatching'; delivery.attempts=Number(delivery.attempts||0)+1; delivery.dispatchId=crypto.randomUUID(); delivery.lastAttemptAt=nowIso; delivery.lastError='';\n  const variant=network==='x'?(content.aiDraft?.variants?.xThread||[]):safeText(content.aiDraft?.variants?.[network]||content.caption,5000);\n  const assetUrls=Object.fromEntries((content.slides||[]).map(file=>[file,signedAssetUrl(content.id,file)])); outgoing.push({json:{contentId:content.id,folder:content.folder,title:content.title,caption:content.caption,brief:content.brief||'',network,slides:content.slides,assetVersion:content.assetVersion,variant,dispatchId:delivery.dispatchId,attempt:delivery.attempts,publicMediaBase,assetUrls}});\n }\n}\nif(outgoing.length){for(const payload of outgoing){const record=state.records[payload.json.contentId]; record.updatedAt=nowIso; record.audit=[...(record.audit||[]),{at:nowIso,operator:'Sistema',action:'reservou publicação',comment:'Entrega '+payload.json.network+' reservada com idempotência.',network:payload.json.network,dispatchId:payload.json.dispatchId}]} saveState(state)}\nreturn outgoing;"
-      },
       "position": [
-        -390,
-        620
+        -384,
+        624
       ]
     },
     {
-      "id": "delivery-loop",
-      "name": "Loop de entregas",
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
       "parameters": {
-        "batchSize": 1,
-        "options": {}
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst config=$env; const now=new Date().toISOString(); const outputs=[]; const blocked=[];\nfor(const [inputIndex,inputItem] of $input.all().entries()){\n  const payload=inputItem.json; const network=safeText(payload.network,30);\n  const requirements={instagram:['SOCIAL_META_ENABLED','SOCIAL_META_INSTAGRAM_ACCOUNT_ID','SOCIAL_PUBLIC_MEDIA_BASE_URL'],facebook:['SOCIAL_META_ENABLED','SOCIAL_META_PAGE_ID','SOCIAL_PUBLIC_MEDIA_BASE_URL'],linkedin:['SOCIAL_LINKEDIN_ENABLED','SOCIAL_LINKEDIN_ORGANIZATION_URN'],x:['SOCIAL_X_ENABLED']}[network]||[];\n  const missing=requirements.filter(key=>!safeText(config[key],400));\n  const featureFlag={instagram:'SOCIAL_META_ENABLED',facebook:'SOCIAL_META_ENABLED',linkedin:'SOCIAL_LINKEDIN_ENABLED',x:'SOCIAL_X_ENABLED'}[network];\n  if(featureFlag&&String(config[featureFlag]||'').trim().toLowerCase()!=='true'&&!missing.includes(featureFlag)) missing.unshift(featureFlag);\n  if(!missing.length){outputs.push({json:payload,pairedItem:{item:inputIndex}});continue;}\n  blocked.push({payload,network,missing});\n}\nif(blocked.length){\n  const {state}=scan(); let changed=false;\n  for(const entry of blocked){\n    const delivery=state.records?.[entry.payload.contentId]?.deliveries?.[entry.network];\n    if(delivery&&delivery.dispatchId===entry.payload.dispatchId){\n      delivery.status='blocked'; delivery.retryAt=''; delivery.lastError='Configuração pendente: '+entry.missing.join(', ');\n      const record=state.records[entry.payload.contentId]; reconcileRecordStatus(record); record.updatedAt=now;\n      record.audit=[...(record.audit||[]),{at:now,operator:'Sistema',action:'bloqueou publicação',comment:delivery.lastError,network:entry.network,dispatchId:entry.payload.dispatchId}];\n      changed=true;\n    }\n  }\n  if(changed) saveState(state);\n}\nreturn outputs;"
       },
-      "position": [
-        -150,
-        620
-      ]
-    },
-    {
-      "id": "social-preflight",
       "name": "Pré-validar publicação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst payload=$input.first().json; const network=safeText(payload.network,30); const now=new Date().toISOString(); const requirements={instagram:['SOCIAL_META_ENABLED','SOCIAL_META_INSTAGRAM_ACCOUNT_ID','SOCIAL_PUBLIC_MEDIA_BASE_URL'],facebook:['SOCIAL_META_ENABLED','SOCIAL_META_PAGE_ID','SOCIAL_PUBLIC_MEDIA_BASE_URL'],linkedin:['SOCIAL_LINKEDIN_ENABLED','SOCIAL_LINKEDIN_ORGANIZATION_URN'],x:['SOCIAL_X_ENABLED']}[network]||[]; const missing=requirements.filter(key=>!safeText($vars[key],400));\nif(!missing.length) return [{json:payload}];\nconst {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[network]; if(delivery&&delivery.dispatchId===payload.dispatchId){delivery.status='blocked'; delivery.retryAt=''; delivery.lastError='Configuração pendente: '+missing.join(', '); state.records[payload.contentId].updatedAt=now; state.records[payload.contentId].audit=[...(state.records[payload.contentId].audit||[]),{at:now,operator:'Sistema',action:'bloqueou publicação',comment:delivery.lastError,network,dispatchId:payload.dispatchId}]; saveState(state)}\nreturn [];"
-      },
       "position": [
-        90,
-        620
+        96,
+        624
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "social-router",
-      "name": "Roteador por rede",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.4,
       "parameters": {
-        "mode": "rules",
         "rules": {
           "values": [
             {
@@ -520,7 +417,8 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
@@ -529,9 +427,11 @@
                     "operator": {
                       "type": "string",
                       "operation": "equals"
-                    }
+                    },
+                    "id": "1df2c2e8-7ebf-4630-a643-ac813db4271e"
                   }
-                ]
+                ],
+                "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "Instagram"
@@ -541,7 +441,8 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
@@ -550,9 +451,11 @@
                     "operator": {
                       "type": "string",
                       "operation": "equals"
-                    }
+                    },
+                    "id": "2453b5e4-a6ba-4f7a-9619-d940c84383ea"
                   }
-                ]
+                ],
+                "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "Facebook"
@@ -562,7 +465,8 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
@@ -571,9 +475,11 @@
                     "operator": {
                       "type": "string",
                       "operation": "equals"
-                    }
+                    },
+                    "id": "07b2e0a8-8ff8-4ca0-b10d-487ffe2e51b6"
                   }
-                ]
+                ],
+                "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "LinkedIn"
@@ -583,7 +489,8 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
@@ -592,9 +499,11 @@
                     "operator": {
                       "type": "string",
                       "operation": "equals"
-                    }
+                    },
+                    "id": "107cc222-a1e4-44bf-b91e-5d132d3859f0"
                   }
-                ]
+                ],
+                "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "X / thread"
@@ -606,35 +515,40 @@
           "ignoreCase": false
         }
       },
+      "name": "Roteador por rede",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
       "position": [
-        340,
-        620
+        352,
+        624
       ]
     },
     {
-      "id": "ig-expand",
+      "parameters": {
+        "jsCode": "const parent = $('Roteador por rede').item.json;\n\nif (!Array.isArray(parent.slides) || parent.slides.length < 2 || parent.slides.length > 10) {\n  throw new Error('O carrossel do Instagram deve ter entre 2 e 10 imagens.');\n}\n\nif (!parent.publicMediaBase || !String(parent.publicMediaBase).startsWith('https://')) {\n  throw new Error('Instagram requer uma URL pública HTTPS para as imagens.');\n}\n\nreturn parent.slides.map((file, index) => {\n  const url = parent.assetUrls?.[file];\n\n  if (!url || !String(url).startsWith('https://')) {\n    throw new Error(`Não foi possível gerar a URL segura da imagem ${file}.`);\n  }\n\n  return {\n    json: {\n      ...parent,\n      file,\n      url,\n      slideIndex: index,\n    },\n    pairedItem: { item: 0 },\n  };\n});"
+      },
       "name": "Instagram · preparar slides",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "const parent=$input.first().json; if(parent.slides.length<2||parent.slides.length>10) throw new Error('O carrossel do Instagram deve ter entre 2 e 10 imagens.'); if(!parent.publicMediaBase) throw new Error('Instagram requer uma URL pública HTTPS para as imagens.'); return parent.slides.map(file=>{const url=parent.assetUrls?.[file]; if(!url) throw new Error('Não foi possível gerar a URL segura da imagem '+file+'.'); return {json:{...parent,file,url}}});"
-      },
       "position": [
-        610,
-        340
+        624,
+        352
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "ig-containers",
-      "name": "Instagram · criar containers",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
       "parameters": {
         "method": "POST",
-        "url": "={{ \"https://graph.facebook.com/\"+($vars.SOCIAL_META_GRAPH_VERSION || \"v23.0\")+\"/\"+$vars.SOCIAL_META_INSTAGRAM_ACCOUNT_ID+\"/media\" }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
+        "url": "={{ \"https://graph.facebook.com/\"+($env.SOCIAL_META_GRAPH_VERSION || \"v25.0\")+\"/\"+$env.SOCIAL_META_INSTAGRAM_ACCOUNT_ID+\"/media\" }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ \"Bearer \"+$(\"Instagram · token da Página\").first().json.access_token }}"
+            }
+          ]
+        },
         "sendBody": true,
         "contentType": "form-urlencoded",
         "bodyParameters": {
@@ -653,36 +567,41 @@
           "timeout": 60000
         }
       },
+      "name": "Instagram · criar containers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        850,
-        340
+        864,
+        352
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "ig-assemble",
+      "parameters": {
+        "jsCode": "const parent=$('Pré-validar publicação').first().json; const children=$input.all().map(item=>item.json.id).filter(Boolean); if(children.length!==parent.slides.length) throw new Error('A Meta não retornou todos os containers do carrossel.'); return [{json:{...parent,children},pairedItem:{item:0}}];"
+      },
       "name": "Instagram · reunir containers",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "const parent=$('Pré-validar publicação').first().json; const children=$input.all().map(item=>item.json.id).filter(Boolean); if(children.length!==parent.slides.length) throw new Error('A Meta não retornou todos os containers do carrossel.'); return [{json:{...parent,children}}];"
-      },
       "position": [
-        1090,
-        340
+        1104,
+        352
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "ig-carousel",
-      "name": "Instagram · criar carrossel",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
       "parameters": {
         "method": "POST",
-        "url": "={{ \"https://graph.facebook.com/\"+($vars.SOCIAL_META_GRAPH_VERSION || \"v23.0\")+\"/\"+$vars.SOCIAL_META_INSTAGRAM_ACCOUNT_ID+\"/media\" }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
+        "url": "={{ \"https://graph.facebook.com/\"+($env.SOCIAL_META_GRAPH_VERSION || \"v25.0\")+\"/\"+$env.SOCIAL_META_INSTAGRAM_ACCOUNT_ID+\"/media\" }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ \"Bearer \"+$(\"Instagram · token da Página\").first().json.access_token }}"
+            }
+          ]
+        },
         "sendBody": true,
         "contentType": "form-urlencoded",
         "bodyParameters": {
@@ -705,71 +624,78 @@
           "timeout": 60000
         }
       },
+      "name": "Instagram · criar carrossel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        1330,
-        340
+        1344,
+        352
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "ig-wait",
+      "parameters": {
+        "amount": 30
+      },
       "name": "Instagram · aguardar processamento",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "parameters": {
-        "resume": "timeInterval",
-        "amount": 30,
-        "unit": "seconds"
-      },
       "position": [
-        1570,
-        340
+        1584,
+        352
       ]
     },
     {
-      "id": "ig-status",
-      "name": "Instagram · consultar status do carrossel",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
       "parameters": {
-        "method": "GET",
-        "url": "={{ \"https://graph.facebook.com/\"+($vars.SOCIAL_META_GRAPH_VERSION || \"v23.0\")+\"/\"+$(\"Instagram · criar carrossel\").item.json.id+\"?fields=status_code\" }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
+        "url": "={{ \"https://graph.facebook.com/\"+($env.SOCIAL_META_GRAPH_VERSION || \"v25.0\")+\"/\"+$(\"Instagram · criar carrossel\").item.json.id+\"?fields=status_code\" }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ \"Bearer \"+$(\"Instagram · token da Página\").first().json.access_token }}"
+            }
+          ]
+        },
         "options": {
           "timeout": 60000
         }
       },
+      "name": "Instagram · consultar status do carrossel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        1810,
-        340
+        1824,
+        352
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "ig-ready",
-      "name": "Instagram · validar processamento",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
       "parameters": {
         "jsCode": "const status=String($json.status_code||'').toUpperCase(); if(status!=='FINISHED') throw new Error('O carrossel do Instagram ainda não terminou de processar (status: '+(status||'indisponível')+'). A entrega será tentada novamente.'); return $input.all();"
       },
+      "name": "Instagram · validar processamento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        2050,
-        340
+        2064,
+        352
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "ig-publish",
-      "name": "Instagram · publicar carrossel",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
       "parameters": {
         "method": "POST",
-        "url": "={{ \"https://graph.facebook.com/\"+($vars.SOCIAL_META_GRAPH_VERSION || \"v23.0\")+\"/\"+$vars.SOCIAL_META_INSTAGRAM_ACCOUNT_ID+\"/media_publish\" }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
+        "url": "={{ \"https://graph.facebook.com/\"+($env.SOCIAL_META_GRAPH_VERSION || \"v25.0\")+\"/\"+$env.SOCIAL_META_INSTAGRAM_ACCOUNT_ID+\"/media_publish\" }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ \"Bearer \"+$(\"Instagram · token da Página\").first().json.access_token }}"
+            }
+          ]
+        },
         "sendBody": true,
         "contentType": "form-urlencoded",
         "bodyParameters": {
@@ -784,36 +710,41 @@
           "timeout": 60000
         }
       },
+      "name": "Instagram · publicar carrossel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        2290,
-        340
+        2304,
+        352
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "fb-expand",
+      "parameters": {
+        "jsCode": "const parent = $('Roteador por rede').item.json;\n\nif (!Array.isArray(parent.slides) || parent.slides.length < 1) {\n  throw new Error('A publicação do Facebook precisa ter pelo menos uma imagem.');\n}\n\nif (!parent.publicMediaBase || !String(parent.publicMediaBase).startsWith('https://')) {\n  throw new Error('Facebook requer uma URL pública HTTPS para as imagens neste fluxo.');\n}\n\nreturn parent.slides.map((file, index) => {\n  const url = parent.assetUrls?.[file];\n\n  if (!url || !String(url).startsWith('https://')) {\n    throw new Error(`Não foi possível gerar a URL segura da imagem ${file}.`);\n  }\n\n  return {\n    json: {\n      ...parent,\n      file,\n      url,\n      slideIndex: index,\n    },\n    pairedItem: { item: 0 },\n  };\n});"
+      },
       "name": "Facebook · preparar slides",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "const parent=$input.first().json; if(!parent.publicMediaBase) throw new Error('Facebook requer uma URL pública HTTPS para as imagens neste fluxo.'); return parent.slides.map(file=>{const url=parent.assetUrls?.[file]; if(!url) throw new Error('Não foi possível gerar a URL segura da imagem '+file+'.'); return {json:{...parent,file,url}}});"
-      },
       "position": [
-        610,
+        624,
         560
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "fb-photos",
-      "name": "Facebook · enviar fotos não publicadas",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
       "parameters": {
         "method": "POST",
-        "url": "={{ \"https://graph.facebook.com/\"+($vars.SOCIAL_META_GRAPH_VERSION || \"v23.0\")+\"/\"+$vars.SOCIAL_META_PAGE_ID+\"/photos\" }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
+        "url": "={{ \"https://graph.facebook.com/\"+($env.SOCIAL_META_GRAPH_VERSION || \"v25.0\")+\"/\"+$env.SOCIAL_META_PAGE_ID+\"/photos\" }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ \"Bearer \"+$(\"Facebook · token da Página\").first().json.access_token }}"
+            }
+          ]
+        },
         "sendBody": true,
         "contentType": "form-urlencoded",
         "bodyParameters": {
@@ -832,36 +763,41 @@
           "timeout": 60000
         }
       },
+      "name": "Facebook · enviar fotos não publicadas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        850,
+        864,
         560
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "fb-assemble",
+      "parameters": {
+        "jsCode": "const parent=$('Pré-validar publicação').first().json; const media=$input.all().map(item=>item.json.id).filter(Boolean).map(media_fbid=>({media_fbid})); if(media.length!==parent.slides.length) throw new Error('A Meta não retornou todas as fotos não publicadas do Facebook.'); return [{json:{...parent,attachedMedia:media},pairedItem:{item:0}}];"
+      },
       "name": "Facebook · reunir IDs das fotos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "const parent=$('Pré-validar publicação').first().json; const media=$input.all().map(item=>item.json.id).filter(Boolean).map(media_fbid=>({media_fbid})); if(media.length!==parent.slides.length) throw new Error('A Meta não retornou todas as fotos não publicadas do Facebook.'); return [{json:{...parent,attachedMedia:media}}];"
-      },
       "position": [
-        1090,
+        1104,
         560
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "fb-post",
-      "name": "Facebook · publicar carrossel",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
       "parameters": {
         "method": "POST",
-        "url": "={{ \"https://graph.facebook.com/\"+($vars.SOCIAL_META_GRAPH_VERSION || \"v23.0\")+\"/\"+$vars.SOCIAL_META_PAGE_ID+\"/feed\" }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
+        "url": "={{ \"https://graph.facebook.com/\"+($env.SOCIAL_META_GRAPH_VERSION || \"v25.0\")+\"/\"+$env.SOCIAL_META_PAGE_ID+\"/feed\" }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ \"Bearer \"+$(\"Facebook · token da Página\").first().json.access_token }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ message: $json.variant || $json.caption, attached_media: $json.attachedMedia }) }}",
@@ -869,193 +805,111 @@
           "timeout": 60000
         }
       },
+      "name": "Facebook · publicar carrossel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        1330,
+        1344,
         560
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "li-expand",
+      "parameters": {
+        "jsCode": "const parent=$input.first().json; if(!parent.slides.length) throw new Error('Não há imagens para enviar ao LinkedIn.'); return parent.slides.map((file,index)=>({json:{...parent,file,filePath:'/files/postagem-redes/entrada/'+parent.folder+'/'+file},pairedItem:{item:0}}));"
+      },
       "name": "LinkedIn · preparar arquivos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "const parent=$input.first().json; if(!parent.slides.length) throw new Error('Não há imagens para enviar ao LinkedIn.'); return parent.slides.map(file=>({json:{...parent,file,filePath:'/files/postagem-redes/entrada/'+parent.folder+'/'+file}}));"
-      },
       "position": [
-        610,
-        780
+        624,
+        784
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "li-read",
-      "name": "LinkedIn · ler imagem local",
-      "type": "n8n-nodes-base.readWriteFile",
-      "typeVersion": 1.1,
       "parameters": {
-        "operation": "read",
         "fileSelector": "={{ $json.filePath }}",
         "options": {
           "dataPropertyName": "data"
         }
       },
+      "name": "LinkedIn · ler imagem local",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
       "position": [
-        850,
-        780
+        864,
+        784
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "li-init",
-      "name": "Inicializar upload LinkedIn",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.linkedin.com/rest/images?action=initializeUpload",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "LinkedIn-Version",
-              "value": "={{ $vars.SOCIAL_LINKEDIN_VERSION || \"202607\" }}"
-            },
-            {
-              "name": "X-Restli-Protocol-Version",
-              "value": "2.0.0"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ initializeUploadRequest: { owner: $vars.SOCIAL_LINKEDIN_ORGANIZATION_URN } }) }}",
-        "options": {
-          "timeout": 60000
-        }
-      },
-      "position": [
-        1090,
-        780
-      ],
-      "onError": "continueErrorOutput"
-    },
-    {
-      "id": "li-upload",
-      "name": "LinkedIn · enviar binário",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
       "parameters": {
         "method": "PUT",
         "url": "={{ $json.value.uploadUrl }}",
         "sendBody": true,
         "contentType": "raw",
-        "inputDataFieldName": "data",
         "options": {
           "timeout": 60000
         }
       },
+      "name": "LinkedIn · enviar binário",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        1330,
-        780
+        1344,
+        784
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "li-assemble",
+      "parameters": {
+        "jsCode": "const parent=$('Pré-validar publicação').first().json; const images=$('Inicializar upload LinkedIn').all().map(item=>item.json.value?.image||item.json.image||item.json.id).filter(Boolean); if(images.length!==parent.slides.length) throw new Error('O LinkedIn não retornou URNs para todas as imagens.'); return [{json:{...parent,images},pairedItem:{item:0}}];"
+      },
       "name": "LinkedIn · reunir URNs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "const parent=$('Pré-validar publicação').first().json; const images=$('Inicializar upload LinkedIn').all().map(item=>item.json.value?.image||item.json.image||item.json.id).filter(Boolean); if(images.length!==parent.slides.length) throw new Error('O LinkedIn não retornou URNs para todas as imagens.'); return [{json:{...parent,images}}];"
-      },
       "position": [
-        1570,
-        780
+        1584,
+        784
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "li-post",
-      "name": "LinkedIn · criar post multi-imagem",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
       "parameters": {
-        "method": "POST",
-        "url": "https://api.linkedin.com/rest/posts",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "LinkedIn-Version",
-              "value": "={{ $vars.SOCIAL_LINKEDIN_VERSION || \"202607\" }}"
-            },
-            {
-              "name": "X-Restli-Protocol-Version",
-              "value": "2.0.0"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ author: $vars.SOCIAL_LINKEDIN_ORGANIZATION_URN, commentary: $json.variant || $json.caption, visibility: \"PUBLIC\", distribution: { feedDistribution: \"MAIN_FEED\", targetEntities: [], thirdPartyDistributionChannels: [] }, lifecycleState: \"PUBLISHED\", isReshareDisabledByAuthor: false, content: { multiImage: { images: $json.images.map(id => ({ id })) } } }) }}",
-        "options": {
-          "timeout": 60000
-        }
+        "jsCode": "const payload=$input.first().json; const thread=Array.isArray(payload.variant)?payload.variant.filter(Boolean):[]; const chunks=(thread.length?thread:[payload.caption]).map(value=>String(value).trim()).filter(Boolean).slice(0,4); if(!chunks.length) throw new Error('Não há texto para a thread do X.'); return [{json:{...payload,chunks},pairedItem:{item:0}}];"
       },
-      "position": [
-        1810,
-        780
-      ],
-      "onError": "continueErrorOutput"
-    },
-    {
-      "id": "x-prepare",
       "name": "X · adaptar sequência",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "parameters": {
-        "jsCode": "const payload=$input.first().json; const thread=Array.isArray(payload.variant)?payload.variant.filter(Boolean):[]; const chunks=(thread.length?thread:[payload.caption]).map(value=>String(value).trim()).filter(Boolean).slice(0,4); if(!chunks.length) throw new Error('Não há texto para a thread do X.'); return [{json:{...payload,chunks}}];"
-      },
       "position": [
-        610,
-        1020
+        624,
+        1024
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "x-read",
-      "name": "X · ler primeira imagem",
-      "type": "n8n-nodes-base.readWriteFile",
-      "typeVersion": 1.1,
       "parameters": {
-        "operation": "read",
         "fileSelector": "={{ \"/files/postagem-redes/entrada/\"+$json.folder+\"/\"+$json.slides[0] }}",
         "options": {
           "dataPropertyName": "data"
         }
       },
+      "name": "X · ler primeira imagem",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
       "position": [
-        850,
-        1020
+        864,
+        1024
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "x-upload",
-      "name": "X · enviar mídia v2",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
       "parameters": {
         "method": "POST",
         "url": "https://api.x.com/2/media/upload",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twitterOAuth2Api",
         "sendBody": true,
         "contentType": "multipart-form-data",
         "bodyParameters": {
@@ -1064,6 +918,14 @@
               "parameterType": "formBinaryData",
               "name": "media",
               "inputDataFieldName": "data"
+            },
+            {
+              "name": "media_category",
+              "value": "tweet_image"
+            },
+            {
+              "name": "media_type",
+              "value": "image/png"
             }
           ]
         },
@@ -1071,42 +933,39 @@
           "timeout": 60000
         }
       },
+      "name": "X · enviar mídia v2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        1090,
-        1020
+        1104,
+        1024
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "x-first",
-      "name": "X · publicar post inicial",
-      "type": "n8n-nodes-base.twitter",
-      "typeVersion": 2,
       "parameters": {
-        "resource": "tweet",
-        "operation": "create",
         "text": "={{ $(\"X · adaptar sequência\").item.json.chunks[0] }}",
         "additionalFields": {
           "attachments": "={{ $(\"X · enviar mídia v2\").item.json.data.id }}"
         }
       },
+      "name": "X · publicar post inicial",
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
       "position": [
-        1330,
-        1020
+        1344,
+        1024
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "x-has-2",
-      "name": "X · há resposta 2?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
       "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -1118,23 +977,21 @@
                 "singleValue": true
               }
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
+      "name": "X · há resposta 2?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
       "position": [
-        1570,
-        980
+        1584,
+        992
       ]
     },
     {
-      "id": "x-reply-2",
-      "name": "X · publicar resposta 2",
-      "type": "n8n-nodes-base.twitter",
-      "typeVersion": 2,
       "parameters": {
-        "resource": "tweet",
-        "operation": "create",
         "text": "={{ $(\"X · adaptar sequência\").item.json.chunks[1] }}",
         "additionalFields": {
           "inReplyToStatusId": {
@@ -1143,23 +1000,23 @@
           }
         }
       },
+      "name": "X · publicar resposta 2",
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
       "position": [
-        1810,
-        940
+        1824,
+        944
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "x-has-3",
-      "name": "X · há resposta 3?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
       "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -1171,23 +1028,21 @@
                 "singleValue": true
               }
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
+      "name": "X · há resposta 3?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
       "position": [
-        2050,
-        980
+        2064,
+        992
       ]
     },
     {
-      "id": "x-reply-3",
-      "name": "X · publicar resposta 3",
-      "type": "n8n-nodes-base.twitter",
-      "typeVersion": 2,
       "parameters": {
-        "resource": "tweet",
-        "operation": "create",
         "text": "={{ $(\"X · adaptar sequência\").item.json.chunks[2] }}",
         "additionalFields": {
           "inReplyToStatusId": {
@@ -1196,23 +1051,23 @@
           }
         }
       },
+      "name": "X · publicar resposta 3",
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
       "position": [
-        2290,
-        940
+        2304,
+        944
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "x-has-4",
-      "name": "X · há resposta 4?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
       "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -1224,23 +1079,21 @@
                 "singleValue": true
               }
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
+      "name": "X · há resposta 4?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
       "position": [
-        2530,
-        980
+        2544,
+        992
       ]
     },
     {
-      "id": "x-reply-4",
-      "name": "X · publicar resposta 4",
-      "type": "n8n-nodes-base.twitter",
-      "typeVersion": 2,
       "parameters": {
-        "resource": "tweet",
-        "operation": "create",
         "text": "={{ $(\"X · adaptar sequência\").item.json.chunks[3] }}",
         "additionalFields": {
           "inReplyToStatusId": {
@@ -1249,46 +1102,17 @@
           }
         }
       },
+      "name": "X · publicar resposta 4",
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
       "position": [
-        2770,
-        940
+        2784,
+        944
       ],
       "onError": "continueErrorOutput"
     },
     {
-      "id": "delivery-failure",
-      "name": "Registrar falha e retry",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
       "parameters": {
-        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst payload=$('Loop de entregas').item.json; const now=new Date(); const nowIso=now.toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; const raw=safeText($json.error?.message||$json.message||$json.description||'Falha sem detalhe retornado pela rede.',500); if(delivery&&delivery.dispatchId===payload.dispatchId){const attempts=Number(delivery.attempts||1); const canRetry=attempts<3; delivery.status=canRetry?'retry':'failed'; delivery.retryAt=canRetry?new Date(now.getTime()+Math.min(60,2**attempts)*60000).toISOString():''; delivery.lastError=raw; const record=state.records[payload.contentId]; record.updatedAt=nowIso; record.audit=[...(record.audit||[]),{at:nowIso,operator:'Sistema',action:canRetry?'agendou nova tentativa':'falhou publicação',comment:raw,network:payload.network,dispatchId:payload.dispatchId}]; saveState(state)} return [{json:{...payload,ok:false,error:raw}}];"
-      },
-      "position": [
-        2860,
-        1260
-      ]
-    },
-    {
-      "id": "delivery-success",
-      "name": "Registrar publicação e histórico",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "parameters": {
-        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst payload=$('Loop de entregas').item.json; const now=new Date().toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; if(!delivery||delivery.dispatchId!==payload.dispatchId) throw new Error('A confirmação recebida não corresponde à entrega reservada.'); const remoteId=safeText($json.id||$json.data?.id||$json.postId||$json.value?.id||'',200); const permalink=safeText($json.permalink_url||$json.permalink||'',1000); delivery.status='published'; delivery.publishedAt=now; delivery.retryAt=''; delivery.lastRemoteId=remoteId; delivery.lastPermalink=permalink; delivery.lastError=''; const record=state.records[payload.contentId]; const allDone=(record.networks||[]).every(network=>record.deliveries?.[network]?.status==='published'); if(allDone) record.status='publicado'; record.updatedAt=now; record.audit=[...(record.audit||[]),{at:now,operator:'Sistema',action:'publicou conteúdo',comment:'Confirmação recebida da API.',network:payload.network,dispatchId:payload.dispatchId,remoteId}]; saveState(state); return [{json:{...payload,ok:true,remoteId,permalink}}];"
-      },
-      "position": [
-        2860,
-        820
-      ]
-    },
-    {
-      "id": "ledger-insert",
-      "name": "Registrar no Data Table · Ledger",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
-      "parameters": {
-        "resource": "row",
-        "operation": "insert",
         "dataTableId": {
           "mode": "name",
           "value": "Postagem Redes - Ledger"
@@ -1310,9 +1134,156 @@
           "optimizeBulk": true
         }
       },
+      "name": "Registrar no Data Table · Ledger",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
       "position": [
-        3140,
+        3152,
         1040
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst platform='instagram'; const payload=($json&&$json.contentId&&$json.dispatchId)?$json:(()=>{const {state,items}=scan();const matches=items.filter(content=>{const delivery=state.records?.[content.id]?.deliveries?.[platform];return delivery&&delivery.status==='dispatching'&&delivery.dispatchId});if(matches.length!==1)throw new Error('Não foi possível identificar com segurança a entrega '+platform+' em despacho.');const content=matches[0];const delivery=state.records[content.id].deliveries[platform];return {contentId:content.id,network:platform,dispatchId:delivery.dispatchId};})(); const now=new Date().toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; if(!delivery||delivery.dispatchId!==payload.dispatchId) throw new Error('A confirmação recebida não corresponde à entrega reservada.'); const remoteId=safeText($json.id||$json.data?.id||$json.postId||$json.value?.id||'',200); const permalink=safeText($json.permalink_url||$json.permalink||'',1000); delivery.status='published'; delivery.publishedAt=now; delivery.retryAt=''; delivery.lastRemoteId=remoteId; delivery.lastPermalink=permalink; delivery.lastError=''; const record=state.records[payload.contentId]; reconcileRecordStatus(record); record.updatedAt=now; record.audit=[...(record.audit||[]),{at:now,operator:'Sistema',action:'publicou conteúdo',comment:'Confirmação recebida da API.',network:payload.network,dispatchId:payload.dispatchId,remoteId}]; saveState(state); return [{json:{...payload,ok:true,remoteId,permalink}}];"
+      },
+      "name": "Registrar publicação · instagram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst platform='instagram'; const payload=($json&&$json.contentId&&$json.dispatchId)?$json:(()=>{const {state,items}=scan();const matches=items.filter(content=>{const delivery=state.records?.[content.id]?.deliveries?.[platform];return delivery&&delivery.status==='dispatching'&&delivery.dispatchId});if(matches.length!==1)throw new Error('Não foi possível identificar com segurança a entrega '+platform+' em despacho.');const content=matches[0];const delivery=state.records[content.id].deliveries[platform];return {contentId:content.id,network:platform,dispatchId:delivery.dispatchId};})(); const now=new Date(); const nowIso=now.toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; const providerError=$json.error||{}; const raw=safeText(providerError.description||providerError.message||providerError.context?.data?.detail||providerError.context?.data?.title||$json.description||$json.message||'Falha sem detalhe retornado pela rede.',500); if(delivery&&delivery.dispatchId===payload.dispatchId){const attempts=Number(delivery.attempts||1); const canRetry=payload.network!=='x'&&attempts<3; delivery.status=canRetry?'retry':'failed'; delivery.retryAt=canRetry?new Date(now.getTime()+Math.min(60,2**attempts)*60000).toISOString():''; delivery.lastError=raw; const record=state.records[payload.contentId]; reconcileRecordStatus(record); record.updatedAt=nowIso; record.audit=[...(record.audit||[]),{at:nowIso,operator:'Sistema',action:canRetry?'agendou nova tentativa':payload.network==='x'?'registrou falha do X sem nova tentativa':'falhou publicação',comment:raw,network:payload.network,dispatchId:payload.dispatchId}]; saveState(state)} return [{json:{...payload,ok:false,error:raw}}];"
+      },
+      "name": "Registrar falha · instagram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst platform='facebook'; const payload=($json&&$json.contentId&&$json.dispatchId)?$json:(()=>{const {state,items}=scan();const matches=items.filter(content=>{const delivery=state.records?.[content.id]?.deliveries?.[platform];return delivery&&delivery.status==='dispatching'&&delivery.dispatchId});if(matches.length!==1)throw new Error('Não foi possível identificar com segurança a entrega '+platform+' em despacho.');const content=matches[0];const delivery=state.records[content.id].deliveries[platform];return {contentId:content.id,network:platform,dispatchId:delivery.dispatchId};})(); const now=new Date().toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; if(!delivery||delivery.dispatchId!==payload.dispatchId) throw new Error('A confirmação recebida não corresponde à entrega reservada.'); const remoteId=safeText($json.id||$json.data?.id||$json.postId||$json.value?.id||'',200); const permalink=safeText($json.permalink_url||$json.permalink||'',1000); delivery.status='published'; delivery.publishedAt=now; delivery.retryAt=''; delivery.lastRemoteId=remoteId; delivery.lastPermalink=permalink; delivery.lastError=''; const record=state.records[payload.contentId]; reconcileRecordStatus(record); record.updatedAt=now; record.audit=[...(record.audit||[]),{at:now,operator:'Sistema',action:'publicou conteúdo',comment:'Confirmação recebida da API.',network:payload.network,dispatchId:payload.dispatchId,remoteId}]; saveState(state); return [{json:{...payload,ok:true,remoteId,permalink}}];"
+      },
+      "name": "Registrar publicação · facebook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        1056
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst platform='facebook'; const payload=($json&&$json.contentId&&$json.dispatchId)?$json:(()=>{const {state,items}=scan();const matches=items.filter(content=>{const delivery=state.records?.[content.id]?.deliveries?.[platform];return delivery&&delivery.status==='dispatching'&&delivery.dispatchId});if(matches.length!==1)throw new Error('Não foi possível identificar com segurança a entrega '+platform+' em despacho.');const content=matches[0];const delivery=state.records[content.id].deliveries[platform];return {contentId:content.id,network:platform,dispatchId:delivery.dispatchId};})(); const now=new Date(); const nowIso=now.toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; const providerError=$json.error||{}; const raw=safeText(providerError.description||providerError.message||providerError.context?.data?.detail||providerError.context?.data?.title||$json.description||$json.message||'Falha sem detalhe retornado pela rede.',500); if(delivery&&delivery.dispatchId===payload.dispatchId){const attempts=Number(delivery.attempts||1); const canRetry=payload.network!=='x'&&attempts<3; delivery.status=canRetry?'retry':'failed'; delivery.retryAt=canRetry?new Date(now.getTime()+Math.min(60,2**attempts)*60000).toISOString():''; delivery.lastError=raw; const record=state.records[payload.contentId]; reconcileRecordStatus(record); record.updatedAt=nowIso; record.audit=[...(record.audit||[]),{at:nowIso,operator:'Sistema',action:canRetry?'agendou nova tentativa':payload.network==='x'?'registrou falha do X sem nova tentativa':'falhou publicação',comment:raw,network:payload.network,dispatchId:payload.dispatchId}]; saveState(state)} return [{json:{...payload,ok:false,error:raw}}];"
+      },
+      "name": "Registrar falha · facebook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        1168
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst platform='linkedin'; const payload=($json&&$json.contentId&&$json.dispatchId)?$json:(()=>{const {state,items}=scan();const matches=items.filter(content=>{const delivery=state.records?.[content.id]?.deliveries?.[platform];return delivery&&delivery.status==='dispatching'&&delivery.dispatchId});if(matches.length!==1)throw new Error('Não foi possível identificar com segurança a entrega '+platform+' em despacho.');const content=matches[0];const delivery=state.records[content.id].deliveries[platform];return {contentId:content.id,network:platform,dispatchId:delivery.dispatchId};})(); const now=new Date().toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; if(!delivery||delivery.dispatchId!==payload.dispatchId) throw new Error('A confirmação recebida não corresponde à entrega reservada.'); const remoteId=safeText($json.id||$json.data?.id||$json.postId||$json.value?.id||'',200); const permalink=safeText($json.permalink_url||$json.permalink||'',1000); delivery.status='published'; delivery.publishedAt=now; delivery.retryAt=''; delivery.lastRemoteId=remoteId; delivery.lastPermalink=permalink; delivery.lastError=''; const record=state.records[payload.contentId]; reconcileRecordStatus(record); record.updatedAt=now; record.audit=[...(record.audit||[]),{at:now,operator:'Sistema',action:'publicou conteúdo',comment:'Confirmação recebida da API.',network:payload.network,dispatchId:payload.dispatchId,remoteId}]; saveState(state); return [{json:{...payload,ok:true,remoteId,permalink}}];"
+      },
+      "name": "Registrar publicação · linkedin",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        1280
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst platform='linkedin'; const payload=($json&&$json.contentId&&$json.dispatchId)?$json:(()=>{const {state,items}=scan();const matches=items.filter(content=>{const delivery=state.records?.[content.id]?.deliveries?.[platform];return delivery&&delivery.status==='dispatching'&&delivery.dispatchId});if(matches.length!==1)throw new Error('Não foi possível identificar com segurança a entrega '+platform+' em despacho.');const content=matches[0];const delivery=state.records[content.id].deliveries[platform];return {contentId:content.id,network:platform,dispatchId:delivery.dispatchId};})(); const now=new Date(); const nowIso=now.toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; const providerError=$json.error||{}; const raw=safeText(providerError.description||providerError.message||providerError.context?.data?.detail||providerError.context?.data?.title||$json.description||$json.message||'Falha sem detalhe retornado pela rede.',500); if(delivery&&delivery.dispatchId===payload.dispatchId){const attempts=Number(delivery.attempts||1); const canRetry=payload.network!=='x'&&attempts<3; delivery.status=canRetry?'retry':'failed'; delivery.retryAt=canRetry?new Date(now.getTime()+Math.min(60,2**attempts)*60000).toISOString():''; delivery.lastError=raw; const record=state.records[payload.contentId]; reconcileRecordStatus(record); record.updatedAt=nowIso; record.audit=[...(record.audit||[]),{at:nowIso,operator:'Sistema',action:canRetry?'agendou nova tentativa':payload.network==='x'?'registrou falha do X sem nova tentativa':'falhou publicação',comment:raw,network:payload.network,dispatchId:payload.dispatchId}]; saveState(state)} return [{json:{...payload,ok:false,error:raw}}];"
+      },
+      "name": "Registrar falha · linkedin",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        1392
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst platform='x'; const payload=($json&&$json.contentId&&$json.dispatchId)?$json:(()=>{const {state,items}=scan();const matches=items.filter(content=>{const delivery=state.records?.[content.id]?.deliveries?.[platform];return delivery&&delivery.status==='dispatching'&&delivery.dispatchId});if(matches.length!==1)throw new Error('Não foi possível identificar com segurança a entrega '+platform+' em despacho.');const content=matches[0];const delivery=state.records[content.id].deliveries[platform];return {contentId:content.id,network:platform,dispatchId:delivery.dispatchId};})(); const now=new Date().toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; if(!delivery||delivery.dispatchId!==payload.dispatchId) throw new Error('A confirmação recebida não corresponde à entrega reservada.'); const remoteId=safeText($json.id||$json.data?.id||$json.postId||$json.value?.id||'',200); const permalink=safeText($json.permalink_url||$json.permalink||'',1000); delivery.status='published'; delivery.publishedAt=now; delivery.retryAt=''; delivery.lastRemoteId=remoteId; delivery.lastPermalink=permalink; delivery.lastError=''; const record=state.records[payload.contentId]; reconcileRecordStatus(record); record.updatedAt=now; record.audit=[...(record.audit||[]),{at:now,operator:'Sistema',action:'publicou conteúdo',comment:'Confirmação recebida da API.',network:payload.network,dispatchId:payload.dispatchId,remoteId}]; saveState(state); return [{json:{...payload,ok:true,remoteId,permalink}}];"
+      },
+      "name": "Registrar publicação · x",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        1504
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst platform='x'; const payload=($json&&$json.contentId&&$json.dispatchId)?$json:(()=>{const {state,items}=scan();const matches=items.filter(content=>{const delivery=state.records?.[content.id]?.deliveries?.[platform];return delivery&&delivery.status==='dispatching'&&delivery.dispatchId});if(matches.length!==1)throw new Error('Não foi possível identificar com segurança a entrega '+platform+' em despacho.');const content=matches[0];const delivery=state.records[content.id].deliveries[platform];return {contentId:content.id,network:platform,dispatchId:delivery.dispatchId};})(); const now=new Date(); const nowIso=now.toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; const providerError=$json.error||{}; const raw=safeText(providerError.description||providerError.message||providerError.context?.data?.detail||providerError.context?.data?.title||$json.description||$json.message||'Falha sem detalhe retornado pela rede.',500); if(delivery&&delivery.dispatchId===payload.dispatchId){const attempts=Number(delivery.attempts||1); const canRetry=payload.network!=='x'&&attempts<3; delivery.status=canRetry?'retry':'failed'; delivery.retryAt=canRetry?new Date(now.getTime()+Math.min(60,2**attempts)*60000).toISOString():''; delivery.lastError=raw; const record=state.records[payload.contentId]; reconcileRecordStatus(record); record.updatedAt=nowIso; record.audit=[...(record.audit||[]),{at:nowIso,operator:'Sistema',action:canRetry?'agendou nova tentativa':payload.network==='x'?'registrou falha do X sem nova tentativa':'falhou publicação',comment:raw,network:payload.network,dispatchId:payload.dispatchId}]; saveState(state)} return [{json:{...payload,ok:false,error:raw}}];"
+      },
+      "name": "Registrar falha · x",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        1616
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst ROOT = '/files/postagem-redes';\nconst INPUT = path.join(ROOT, 'entrada');\nconst STATE = path.join(ROOT, 'state.json');\nconst allowedStatuses = new Set(['pendente','aprovado','agendado','rejeitado','incompleto','publicado','parcial','falhou']);\nfunction slug(value) { const base=String(value).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70)||'conteudo'; let h=0; for(const c of String(value)) h=((h<<5)-h+c.charCodeAt(0))|0; return base+'-'+(h>>>0).toString(36); }\nfunction safeText(value,max=5000){return String(value??'').replace(/\\0/g,'').trim().slice(0,max)}\nfunction readJson(file,fallback){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return fallback}}\nfunction saveState(state){const lock=STATE+'.lock'; let fd; try{fd=fs.openSync(lock,'wx')}catch{throw new Error('Outra alteração está em andamento. Atualize a página e tente novamente.')} try{const temp=STATE+'.tmp';fs.writeFileSync(temp,JSON.stringify(state,null,2),'utf8');fs.renameSync(temp,STATE)}finally{if(fd!==undefined)fs.closeSync(fd);try{fs.unlinkSync(lock)}catch{}}}\nfunction reconcileRecordStatus(record){\n  const statuses=(record?.networks||[]).map(network=>String(record?.deliveries?.[network]?.status||'queued'));\n  if(!statuses.length) return record?.status||'pendente';\n  if(!statuses.every(status=>['published','failed','blocked'].includes(status))) return record.status;\n  const published=statuses.filter(status=>status==='published').length;\n  record.status=published===statuses.length?'publicado':published>0?'parcial':'falhou';\n  return record.status;\n}\nfunction scan(){\n  fs.mkdirSync(INPUT,{recursive:true});\n  const state=readJson(STATE,{version:1,records:{}}); state.records??={};\n  const folders=fs.readdirSync(INPUT,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name);\n  const items=[];\n  for(const folder of folders){\n    const dir=path.join(INPUT,folder);\n    const files=fs.readdirSync(dir,{withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.name);\n    const slides=files.filter(x=>/\\.(png|jpe?g|webp)$/i.test(x)).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));\n    const assetVersion=Math.max(0,...slides.map(file=>Math.floor(fs.statSync(path.join(dir,file)).mtimeMs)));\n    const captionFile=files.find(x=>x.toLowerCase()==='texto.txt');\n    const originalCaption=captionFile?safeText(fs.readFileSync(path.join(dir,captionFile),'utf8')):'';\n    const id=slug(folder); const old=state.records[id]||{};\n    const status=slides.length<1||!originalCaption&&!old.caption?'incompleto':allowedStatuses.has(old.status)?old.status:'pendente';\n    items.push({id,folder,title:old.title||folder,slides,assetVersion,caption:old.caption??originalCaption,brief:old.brief||'',status,networks:Array.isArray(old.networks)?old.networks:[],scheduleAt:old.scheduleAt||'',updatedAt:old.updatedAt||'',aiDraft:old.aiDraft&&typeof old.aiDraft==='object'?old.aiDraft:null,deliveries:old.deliveries&&typeof old.deliveries==='object'?old.deliveries:{},audit:Array.isArray(old.audit)?old.audit:[]});\n  }\n  return {state,items};\n}\n\nconst payload=$json; const now=new Date(); const nowIso=now.toISOString(); const {state}=scan(); const delivery=state.records?.[payload.contentId]?.deliveries?.[payload.network]; const providerError=$json.error||{}; const raw=safeText(providerError.description||providerError.message||providerError.context?.data?.detail||providerError.context?.data?.title||$json.description||$json.message||'Falha sem detalhe retornado pela rede.',500); if(delivery&&delivery.dispatchId===payload.dispatchId){const attempts=Number(delivery.attempts||1); const canRetry=attempts<3; delivery.status=canRetry?'retry':'failed'; delivery.retryAt=canRetry?new Date(now.getTime()+Math.min(60,2**attempts)*60000).toISOString():''; delivery.lastError=raw; const record=state.records[payload.contentId]; record.updatedAt=nowIso; record.audit=[...(record.audit||[]),{at:nowIso,operator:'Sistema',action:canRetry?'agendou nova tentativa':'falhou publicação',comment:raw,network:payload.network,dispatchId:payload.dispatchId}]; saveState(state)} return [{json:{...payload,ok:false,error:raw}}];"
+      },
+      "name": "Registrar falha · pré-validação",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        1824
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ \"https://graph.facebook.com/\"+($env.SOCIAL_META_GRAPH_VERSION || \"v25.0\")+\"/\"+$env.SOCIAL_META_PAGE_ID+\"?fields=access_token\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApiOAuth2Api",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Instagram · token da Página",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        480,
+        352
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ \"https://graph.facebook.com/\"+($env.SOCIAL_META_GRAPH_VERSION || \"v25.0\")+\"/\"+$env.SOCIAL_META_PAGE_ID+\"?fields=access_token\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApiOAuth2Api",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Facebook · token da Página",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        480,
+        560
       ],
       "onError": "continueErrorOutput"
     }
@@ -1481,17 +1452,6 @@
       "main": [
         [
           {
-            "node": "Garantir Data Table · Ledger",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Garantir Data Table · Ledger": {
-      "main": [
-        [
-          {
             "node": "Reservar entregas elegíveis",
             "type": "main",
             "index": 0
@@ -1500,17 +1460,6 @@
       ]
     },
     "Reservar entregas elegíveis": {
-      "main": [
-        [
-          {
-            "node": "Loop de entregas",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop de entregas": {
       "main": [
         [
           {
@@ -1532,7 +1481,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · pré-validação",
             "type": "main",
             "index": 0
           }
@@ -1543,14 +1492,14 @@
       "main": [
         [
           {
-            "node": "Instagram · preparar slides",
+            "node": "Instagram · token da Página",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Facebook · preparar slides",
+            "node": "Facebook · token da Página",
             "type": "main",
             "index": 0
           }
@@ -1582,7 +1531,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · instagram",
             "type": "main",
             "index": 0
           }
@@ -1600,7 +1549,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · instagram",
             "type": "main",
             "index": 0
           }
@@ -1618,7 +1567,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · instagram",
             "type": "main",
             "index": 0
           }
@@ -1636,7 +1585,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · instagram",
             "type": "main",
             "index": 0
           }
@@ -1665,7 +1614,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · instagram",
             "type": "main",
             "index": 0
           }
@@ -1683,7 +1632,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · instagram",
             "type": "main",
             "index": 0
           }
@@ -1694,14 +1643,14 @@
       "main": [
         [
           {
-            "node": "Registrar publicação e histórico",
+            "node": "Registrar publicação · instagram",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · instagram",
             "type": "main",
             "index": 0
           }
@@ -1719,7 +1668,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · facebook",
             "type": "main",
             "index": 0
           }
@@ -1737,7 +1686,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · facebook",
             "type": "main",
             "index": 0
           }
@@ -1755,7 +1704,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · facebook",
             "type": "main",
             "index": 0
           }
@@ -1766,14 +1715,14 @@
       "main": [
         [
           {
-            "node": "Registrar publicação e histórico",
+            "node": "Registrar publicação · facebook",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · facebook",
             "type": "main",
             "index": 0
           }
@@ -1791,7 +1740,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · linkedin",
             "type": "main",
             "index": 0
           }
@@ -1800,34 +1749,10 @@
     },
     "LinkedIn · ler imagem local": {
       "main": [
+        [],
         [
           {
-            "node": "Inicializar upload LinkedIn",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Registrar falha e retry",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Inicializar upload LinkedIn": {
-      "main": [
-        [
-          {
-            "node": "LinkedIn · enviar binário",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · linkedin",
             "type": "main",
             "index": 0
           }
@@ -1845,7 +1770,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · linkedin",
             "type": "main",
             "index": 0
           }
@@ -1854,34 +1779,10 @@
     },
     "LinkedIn · reunir URNs": {
       "main": [
+        [],
         [
           {
-            "node": "LinkedIn · criar post multi-imagem",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Registrar falha e retry",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "LinkedIn · criar post multi-imagem": {
-      "main": [
-        [
-          {
-            "node": "Registrar publicação e histórico",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · linkedin",
             "type": "main",
             "index": 0
           }
@@ -1899,7 +1800,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · x",
             "type": "main",
             "index": 0
           }
@@ -1917,7 +1818,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · x",
             "type": "main",
             "index": 0
           }
@@ -1935,7 +1836,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · x",
             "type": "main",
             "index": 0
           }
@@ -1953,7 +1854,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · x",
             "type": "main",
             "index": 0
           }
@@ -1971,7 +1872,7 @@
         ],
         [
           {
-            "node": "Registrar publicação e histórico",
+            "node": "Registrar publicação · x",
             "type": "main",
             "index": 0
           }
@@ -1989,7 +1890,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · x",
             "type": "main",
             "index": 0
           }
@@ -2007,7 +1908,7 @@
         ],
         [
           {
-            "node": "Registrar publicação e histórico",
+            "node": "Registrar publicação · x",
             "type": "main",
             "index": 0
           }
@@ -2025,7 +1926,7 @@
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · x",
             "type": "main",
             "index": 0
           }
@@ -2043,7 +1944,7 @@
         ],
         [
           {
-            "node": "Registrar publicação e histórico",
+            "node": "Registrar publicação · x",
             "type": "main",
             "index": 0
           }
@@ -2054,21 +1955,21 @@
       "main": [
         [
           {
-            "node": "Registrar publicação e histórico",
+            "node": "Registrar publicação · x",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Registrar falha e retry",
+            "node": "Registrar falha · x",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Registrar publicação e histórico": {
+    "Registrar publicação · instagram": {
       "main": [
         [
           {
@@ -2079,7 +1980,7 @@
         ]
       ]
     },
-    "Registrar falha e retry": {
+    "Registrar falha · instagram": {
       "main": [
         [
           {
@@ -2090,23 +1991,132 @@
         ]
       ]
     },
-    "Registrar no Data Table · Ledger": {
+    "Registrar publicação · facebook": {
       "main": [
         [
           {
-            "node": "Loop de entregas",
+            "node": "Registrar no Data Table · Ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar falha · facebook": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Data Table · Ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar publicação · linkedin": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Data Table · Ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar falha · linkedin": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Data Table · Ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar publicação · x": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Data Table · Ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar falha · x": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Data Table · Ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar falha · pré-validação": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Data Table · Ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram · token da Página": {
+      "main": [
+        [
+          {
+            "node": "Instagram · preparar slides",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Loop de entregas",
+            "node": "Registrar falha · instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook · token da Página": {
+      "main": [
+        [
+          {
+            "node": "Facebook · preparar slides",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar falha · facebook",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  }
+  },
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "activeVersionId": "215f1f82-636e-4444-8e1b-879ff19c1144",
+  "versionCounter": 46,
+  "triggerCount": 2,
+  "sourceWorkflowId": null,
+  "versionMetadata": {
+    "name": "Version 215f1f82",
+    "description": ""
+  },
+  "active": false
 }

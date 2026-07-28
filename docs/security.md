@@ -10,7 +10,7 @@ Controles existentes:
 - os endpoints de arquivo validam conteúdo e nome de arquivo antes de ler o volume;
 - uploads aceitam somente PNG, JPG/JPEG e WEBP, entre 1 e 10 arquivos;
 - os workflows têm acesso restrito ao volume `/files`;
-- o portal não tem credenciais sociais e não publica externamente na fase de homologação.
+- o portal não contém credenciais sociais; a publicação só é liberada pelas flags do container e pelos gates individuais de cada rede.
 
 Controles obrigatórios antes de qualquer exposição fora da LAN:
 
@@ -30,7 +30,7 @@ Controles obrigatórios antes de qualquer exposição fora da LAN:
 
 ## Publicação segura
 
-- Mantenha o publicador desconectado enquanto as contas estiverem em homologação.
+- Mantenha a flag global de publicação desligada durante configuração e habilite somente as redes que passaram por teste controlado.
 - Consuma apenas itens `aprovado` ou `agendado`.
 - Use chave de idempotência por conteúdo e rede; registre ID remoto e permalink.
 - Limite tentativas para evitar duplicidade em timeout de API.

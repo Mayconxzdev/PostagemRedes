@@ -43,11 +43,11 @@ Pensada para conteúdo urgente criado no momento. A tela recebe título, legenda
 3. Sempre informe o operador responsável ao salvar.
 4. Deixe `pendente` quando houver ajuste necessário; use `rejeitado` e comentário para comunicar o motivo.
 5. Use `aprovado` para material pronto para a fila e `agendado` quando houver data/hora definida.
-6. Enquanto a integração social não estiver homologada, a aprovação é uma decisão interna — não uma publicação.
+6. Antes de aprovar, confira os destinos selecionados. Redes prontas seguem para a fila; redes sem acesso ou com falha ficam registradas individualmente sem impedir os demais destinos.
 
 ## Limitações atuais intencionais
 
 - Sem login: adequado somente para a LAN controlada.
 - Estado em JSON: suficiente para a biblioteca atual; não substitui banco relacional em operação de alta concorrência.
-- Sem publicação externa: a próxima etapa depende de OAuth, permissões de conta, testes e idempotência por plataforma.
+- A publicação depende do gate de cada rede. Facebook já tem evidência multi-imagem; Instagram requer uma origem HTTPS de mídia estável para eliminar timeout da Meta; LinkedIn e X continuam dependentes dos respectivos provedores/contas.
 - Sem movimentação automática de arquivos para `publicados/`: isso será feito pelo publicador, após sucesso confirmado e permalink registrado.

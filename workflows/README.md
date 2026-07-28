@@ -6,6 +6,6 @@ Esta pasta contém somente os três workflows mantidos pelo projeto:
 - `05-portal-acoes.sanitized.json`
 - `06-portal-arquivos.sanitized.json`
 
-São exports **sanitizados e inativos**. Eles preservam nós, conexões, organização visual e configurações necessárias para revisão técnica, mas removem credenciais, identificadores de contas, e-mails reais, dados de execução e IDs internos.
+São snapshots **sanitizados e inativos** da revisão operacional de 28/07/2026. Eles preservam nós, conexões, organização visual e configurações necessárias para revisão técnica, mas removem credenciais, identificadores de contas, e-mails reais, dados de execução e IDs internos.
 
-Não use estes arquivos como backup de produção. O backup operacional deve permanecer protegido e fora do Git. Para uma instalação nova, importe os três exports, configure as credenciais diretamente no cofre do n8n e siga o plano de homologação em `../docs/setup.md`.
+Não use estes arquivos como backup de produção. O backup operacional deve permanecer protegido e fora do Git. Para uma instalação nova, importe os três exports, configure as credenciais diretamente no cofre do n8n e siga o plano de homologação em `../docs/setup.md`. Antes de enviar uma campanha real, use uma origem HTTPS estável para mídias Meta e valide cada rede isoladamente.

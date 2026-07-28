@@ -2,7 +2,7 @@
 
 ## Decisão de portfólio
 
-Em 15/07/2026, a instância local foi revisada em n8n 2.27.3. A revisão separou duas coisas que não devem ser confundidas em uma apresentação profissional:
+Em 28/07/2026, a instância local foi revisada em n8n 2.32.5. A revisão separou duas coisas que não devem ser confundidas em uma apresentação profissional:
 
 1. **a operação atual**, mantida por três workflows ativos de Postagem Redes; e
 2. **histórico de migração**, formado por rascunhos antigos de planilha, Drive, alertas e publicadores separados.
@@ -14,7 +14,7 @@ Os rascunhos históricos não fazem parte deste repositório público. Eles tinh
 | Workflow ativo | Papel validado | Escopo |
 |---|---|---|
 | `Postagem Redes — Portal Visual` | Entrega biblioteca, filtros, editor e upload rápido. | Sem publicação externa. |
-| `Postagem Redes — Portal: Ações` | Persiste decisões, IA assistiva, fila, retry, ledger e rotas sociais. | Publicação bloqueada até homologação por variável. |
+| `Postagem Redes — Portal: Ações` | Persiste decisões, IA assistiva, fila, retry, ledger e rotas sociais. | Publicação por rede é isolada por flags, reserva e resultado individual. |
 | `Postagem Redes — Portal: Arquivos` | Entrega mídias autorizadas ao portal. | Valida item/nome; URL assinada no modo público. |
 
 Os dois workflows de Mala Direta permanecem fora deste repositório e não foram modificados por essa consolidação.
@@ -41,7 +41,7 @@ Os dois workflows de Mala Direta permanecem fora deste repositório e não foram
 
 ## Guardrails de ativação
 
-- Não liberar `SOCIAL_PUBLISH_ENABLED` antes de homologar uma conta de teste por rede e confirmar IDs/permalinks no Ledger.
+- Não liberar uma rede antes de homologar sua conta de teste e confirmar IDs/permalinks no Ledger; mantenha as demais rotas bloqueadas por suas flags individuais.
 - Não adicionar segredos ao canvas, aos exports, ao GitHub ou ao chat; use somente o cofre criptografado de credenciais do n8n.
 - Não expor o portal da LAN sem HTTPS, autenticação e uma regra de rede apropriada.
 - Não alterar a imagem global do n8n durante a homologação: a mesma instância atende outro processo operacional e atualizações precisam de janela de manutenção e backup.

@@ -1,10 +1,12 @@
 param(
-    [string]$PortalUrl = 'http://192.168.254.3:5678/webhook/postagem-redes',
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^https?://')]
+    [string]$PortalUrl,
     [string]$DesktopPath = [Environment]::GetFolderPath('Desktop')
 )
 
 $ErrorActionPreference = 'Stop'
-$appDirectory = Join-Path $env:LOCALAPPDATA 'Vesper\PostagemRedes'
+$appDirectory = Join-Path $env:LOCALAPPDATA 'PostagemRedes'
 $iconPath = Join-Path $appDirectory 'postagem_redes.ico'
 $shortcutPath = Join-Path $DesktopPath 'Postagem Redes.lnk'
 
