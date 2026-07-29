@@ -4,6 +4,12 @@
 
 Case study autoral de **Maycon Ferreira** para transformar uma pasta de carrosséis técnicos em uma fila visual, revisável e rastreável de publicação. A operação deixa de depender de planilha: a equipe abre uma central no navegador, organiza as imagens, adapta a legenda, escolhe os canais e registra a decisão antes de qualquer chamada externa.
 
+### Como as publicações validadas foram iniciadas
+
+Os testes de publicação no Facebook e no Instagram foram iniciados pela central visual criada para a equipe.
+
+Após revisar o conteúdo e confirmar a decisão no portal, a ação acionou o workflow correspondente no n8n e seguiu para a API da rede social. Não houve uma etapa manual adicional fora do fluxo depois da confirmação no portal.
+
 > **Leitura honesta do estado:** o portal e os três workflows estão ativos na instância local de n8n 2.32.5. Em 28/07/2026, uma publicação multi-imagem no Facebook foi confirmada em uma Página de teste controlada; o fluxo do Instagram também foi validado em teste, mas uma tentativa posterior de seis slides revelou o limite atual do túnel público de mídia (`download` remoto da Meta excedeu o tempo). X está bloqueado por crédito da conta de teste e LinkedIn aguarda acesso à Página. O que está parcial fica documentado — não é apresentado como pronto.
 
 ## Em um minuto
