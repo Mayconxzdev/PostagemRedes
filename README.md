@@ -1,25 +1,25 @@
 # Postagem Redes
 
-[![Validação do portfólio](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml)
+[![Validação do projeto](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml)
 
-Central visual e três workflows n8n para organizar carrosséis técnicos, revisar legendas, escolher redes, aprovar conteúdo e registrar o resultado individual de cada publicação.
+Desenvolvi uma central visual e três workflows n8n para organizar carrosséis técnicos, revisar legendas, escolher redes, aprovar conteúdo e registrar o resultado individual de cada tentativa de publicação.
 
-> **Estado atual:** os workflows foram revisados na instância local **n8n 2.33.5**. Facebook e Instagram foram exercitados em ambiente de teste. Uma tentativa posterior no Instagram evidenciou limite do túnel público de mídia; X permanece bloqueado por crédito da conta de teste e LinkedIn depende de acesso à Página. O que está parcial não é apresentado como concluído.
+> **Estado atual:** revisei os workflows na instância local **n8n 2.33.5**. Facebook e Instagram foram exercitados em ambiente de teste. Uma tentativa posterior no Instagram encontrou limite do túnel público de mídia; X continua bloqueado por crédito da conta de teste e LinkedIn depende de acesso à Página.
 
-## Leitura rápida para recrutadores
+## Visão geral
 
-| Dimensão | Evidência |
+| Aspecto | Situação atual |
 |---|---|
 | **Arquitetura** | Três workflows: portal visual, ações/agendamento e serviço controlado de arquivos. |
-| **Escala técnica** | O workflow de ações possui 58 nós no snapshot público atual. |
-| **IA aplicada** | OpenAI → Gemini → Ollama como cadeia opcional para rascunho, sempre sujeita à aprovação humana. |
+| **Fluxo principal** | O workflow de ações possui 58 nós no snapshot público atual. |
+| **IA aplicada** | OpenAI → Gemini → Ollama como cadeia opcional para rascunho, sempre com aprovação humana. |
 | **Integrações** | Meta Graph API, OAuth2, APIs HTTP e resultado independente por rede. |
 | **Confiabilidade** | Reserva por destino, `dispatchId`, idempotência, retry, ledger e falha isolada por canal. |
-| **Qualidade pública** | Exports inativos e sanitizados, demo sem chamadas externas, validação de privacidade e GitHub Actions. |
+| **Versão pública** | Exports inativos e sanitizados, demo sem chamadas externas, validação de privacidade e GitHub Actions. |
 
-## Problema resolvido
+## Problema que resolvi
 
-Conteúdo técnico ficava espalhado entre pastas, planilhas e mensagens. A solução reúne:
+O conteúdo técnico ficava espalhado entre pastas, planilhas e mensagens. Organizei o processo em um único fluxo com:
 
 - biblioteca visual de carrosséis;
 - revisão de legenda e prévia;
@@ -31,16 +31,16 @@ Conteúdo técnico ficava espalhado entre pastas, planilhas e mensagens. A solu�
 
 ## Estado por canal
 
-| Canal | Resultado conhecido | Situação correta |
+| Canal | O que aconteceu | Estado atual |
 |---|---|---|
-| **Facebook** | Publicação multi-imagem confirmada em Página de teste controlada. | **Comprovado em teste** |
-| **Instagram** | OAuth e publicação foram exercitados; tentativa posterior de seis imagens falhou pelo tempo de download através do túnel. | **Validado com limite de infraestrutura** |
-| **X** | Rota e registro existem; conta de teste retornou limite de créditos. | **Bloqueado pelo provedor** |
-| **LinkedIn** | Fluxo preparado, mas credencial e acesso à Página não foram fornecidos. | **Pendente de acesso externo** |
+| **Facebook** | Publicação multi-imagem confirmada em Página de teste controlada. | **Funcionou em teste** |
+| **Instagram** | OAuth e publicação foram exercitados; uma tentativa posterior com seis imagens falhou pelo tempo de download através do túnel. | **Fluxo validado com limite de infraestrutura** |
+| **X** | A rota e o registro existem; a conta de teste retornou limite de créditos. | **Bloqueado pelo provedor** |
+| **LinkedIn** | O fluxo está preparado, mas a credencial e o acesso à Página não foram fornecidos. | **Pendente de acesso externo** |
 
-Essa separação evita transformar contrato implementado em promessa de operação contínua.
+Essa separação deixa claro o que já funcionou, o que depende de infraestrutura e o que ainda depende de acesso externo.
 
-## Interface demonstrativa
+## Interface
 
 ### Biblioteca
 
@@ -64,7 +64,7 @@ As telas usam conteúdo fictício e anonimizado. A [demo navegável](docs/demo/i
 | `Portal: Ações` | Webhook `POST` + agenda | Decisões, rascunho assistido, reservas, publicação, falhas e ledger. |
 | `Portal: Arquivos` | Webhook `GET` | Entrega somente a mídia validada do conteúdo solicitado. |
 
-O export [`05-portal-acoes.sanitized.json`](workflows/05-portal-acoes.sanitized.json) possui 58 nós, está inativo por segurança e passa pela validação automática.
+O export [`05-portal-acoes.sanitized.json`](workflows/05-portal-acoes.sanitized.json) possui 58 nós, fica inativo por segurança e passa pela validação automática.
 
 ![Canvas real do workflow Portal Ações](docs/assets/n8n-real/05-portal-acoes-canvas-completo.png)
 
@@ -87,25 +87,25 @@ flowchart LR
     LI --> L
 ```
 
-## Decisões de engenharia
+## Decisões técnicas
 
-- interface, ações e mídia isolados em três workflows;
-- OAuth mantido no cofre do n8n;
-- chamadas Graph específicas implementadas por HTTP quando o nó oficial não cobre o contrato necessário;
-- cada rede recebe reserva e `dispatchId` antes da API;
-- falha em um canal não cancela os demais;
-- sugestões de IA não substituem a legenda aprovada;
-- portal sem login permanece limitado à LAN;
-- PostgreSQL é o próximo passo caso concorrência e retenção cresçam.
+- separei interface, ações e mídia em três workflows;
+- mantive OAuth no cofre do n8n;
+- usei chamadas HTTP específicas quando o nó oficial não cobria o contrato necessário;
+- reservei cada destino e gerei um `dispatchId` antes da chamada externa;
+- isolei falhas por canal para que uma rede não cancele as demais;
+- mantive a legenda aprovada como fonte principal, mesmo quando a IA sugere um rascunho;
+- limitei o portal sem login à rede local;
+- deixei PostgreSQL como evolução prevista caso concorrência e retenção cresçam.
 
 ## Documentação
 
 - [Arquitetura](docs/architecture.md)
-- [Evidências técnicas](docs/evidence.md)
+- [Detalhes técnicos](docs/evidence.md)
 - [Operação do portal](docs/portal.md)
 - [Setup seguro](docs/setup.md)
 - [Segurança](docs/security.md)
-- [Testes e próximos gates](docs/testing.md)
+- [Testes e próximos passos](docs/testing.md)
 - [Migração](docs/migration.md)
 - [Exports sanitizados](workflows/README.md)
 
@@ -126,4 +126,4 @@ A validação rejeita JSON inválido, credenciais serializadas, e-mails reais, I
 
 ## Autor
 
-**Maycon Ferreira** — produto, workflows, integrações, IA aplicada, UX operacional, testes e documentação.
+**Maycon Ferreira** — produto, workflows, integrações, IA aplicada, experiência operacional, testes e documentação.
