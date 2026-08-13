@@ -13,6 +13,7 @@ Desenvolvi uma central visual e três workflows n8n para organizar carrosséis t
 | **Arquitetura** | Três workflows: portal visual, ações/agendamento e serviço controlado de arquivos. |
 | **Fluxo principal** | O workflow de ações possui 58 nós no snapshot público atual. |
 | **IA aplicada** | OpenAI → Gemini → Ollama como cadeia opcional para rascunho, sempre com aprovação humana. |
+| **Grounding/RAG** | No ambiente pessoal/interno, a recuperação de contexto usa LangChain, Supabase e n8n/Docker para apoiar respostas com informações da própria base antes da revisão. A base de conhecimento e seus dados não são publicados neste snapshot. |
 | **Integrações** | Meta Graph API, OAuth2, APIs HTTP e resultado independente por rede. |
 | **Confiabilidade** | Reserva por destino, `dispatchId`, idempotência, retry, ledger e falha isolada por canal. |
 | **Versão pública** | Exports inativos e sanitizados, demo sem chamadas externas, validação de privacidade e GitHub Actions. |
@@ -24,6 +25,7 @@ O conteúdo técnico ficava espalhado entre pastas, planilhas e mensagens. Organ
 - biblioteca visual de carrosséis;
 - revisão de legenda e prévia;
 - responsável, comentário, canais e agendamento;
+- recuperação de contexto/grounding antes da geração quando a base interna está habilitada;
 - geração assistida de rascunho;
 - aprovação humana antes das APIs externas;
 - fila e resultado individual por rede;
@@ -61,7 +63,7 @@ As telas usam conteúdo fictício e anonimizado. A [demo navegável](docs/demo/i
 | Workflow | Gatilho | Responsabilidade |
 |---|---|---|
 | `Portal Visual` | Webhook `GET` | Biblioteca, filtros, prévias, modais e upload rápido. |
-| `Portal: Ações` | Webhook `POST` + agenda | Decisões, rascunho assistido, reservas, publicação, falhas e ledger. |
+| `Portal: Ações` | Webhook `POST` + agenda | Decisões, contexto/rascunho assistido, reservas, publicação, falhas e ledger. |
 | `Portal: Arquivos` | Webhook `GET` | Entrega somente a mídia validada do conteúdo solicitado. |
 
 O export [`05-portal-acoes.sanitized.json`](workflows/05-portal-acoes.sanitized.json) possui 58 nós, fica inativo por segurança e passa pela validação automática.
@@ -75,7 +77,7 @@ flowchart LR
     U[Usuário] --> P[Portal visual]
     P --> H[Aprovação humana]
     H --> A[Workflow de ações]
-    A --> AI[IA opcional para rascunho]
+    A --> AI[Contexto + IA opcional]
     A --> R[Reserva por rede]
     R --> FB[Facebook]
     R --> IG[Instagram]
@@ -87,6 +89,12 @@ flowchart LR
     LI --> L
 ```
 
+## Grounding e base de conhecimento
+
+No ambiente original, uso uma camada de recuperação de contexto com **LangChain + Supabase + n8n/Docker** para consultar informações da própria base antes de montar o rascunho. O objetivo é reduzir afirmações sem base sobre produtos, capacidades ou informações da empresa.
+
+Essa camada é diferente do snapshot público: documentos, embeddings, registros e configurações da base interna permanecem privados. Portanto, este repositório demonstra publicamente o fluxo de publicação e seus guardrails, enquanto a implementação operacional de conhecimento é descrita sem expor o conteúdo corporativo.
+
 ## Decisões técnicas
 
 - separei interface, ações e mídia em três workflows;
@@ -95,6 +103,7 @@ flowchart LR
 - reservei cada destino e gerei um `dispatchId` antes da chamada externa;
 - isolei falhas por canal para que uma rede não cancele as demais;
 - mantive a legenda aprovada como fonte principal, mesmo quando a IA sugere um rascunho;
+- usei grounding/recuperação de contexto quando a base interna está disponível, sem publicar seus dados;
 - limitei o portal sem login à rede local;
 - deixei PostgreSQL como evolução prevista caso concorrência e retenção cresçam.
 
@@ -122,7 +131,7 @@ A validação rejeita JSON inválido, credenciais serializadas, e-mails reais, I
 
 ## Tecnologias
 
-`n8n 2.33.5` · `Docker` · `JavaScript` · `Node.js` · `Webhooks` · `OAuth2` · `Meta Graph API` · `HTTP APIs` · `HTML/CSS` · `Data Tables` · `Idempotência` · `Retry` · `Auditoria` · `GitHub Actions`
+`n8n 2.33.5` · `Docker` · `JavaScript` · `Node.js` · `Webhooks` · `OAuth2` · `Meta Graph API` · `HTTP APIs` · `LangChain` · `Supabase` · `RAG/grounding` · `Data Tables` · `Idempotência` · `Retry` · `Auditoria` · `GitHub Actions`
 
 ## Autor
 
