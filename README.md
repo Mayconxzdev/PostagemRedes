@@ -110,6 +110,7 @@ Essa camada é diferente do snapshot público: documentos, embeddings, registros
 ## Documentação
 
 - [Arquitetura](docs/architecture.md)
+- [AI System Card](docs/AI_SYSTEM_CARD.md) — papel da IA, human-in-the-loop, risco de terceiros e limites
 - [Detalhes técnicos](docs/evidence.md)
 - [Operação do portal](docs/portal.md)
 - [Setup seguro](docs/setup.md)
