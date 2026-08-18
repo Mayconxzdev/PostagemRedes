@@ -21,6 +21,9 @@ jobs:
           node scripts/validate-portfolio-workflows.mjs
           node scripts/validate-portal-code.mjs
 
+      - name: Run offline applied-AI eval contracts
+        run: node evals/run-evals.mjs
+
       - name: Rebuild deterministic portfolio demo
         run: |
           node scripts/build-portfolio-demo.mjs
