@@ -14,6 +14,7 @@ Desenvolvi uma central visual e três workflows n8n para organizar carrosséis t
 | **Fluxo principal** | O workflow de ações possui 58 nós no snapshot público atual. |
 | **IA aplicada** | OpenAI → Gemini → Ollama como cadeia opcional para rascunho, sempre com aprovação humana. |
 | **Grounding/RAG** | No ambiente pessoal/interno, a recuperação de contexto usa LangChain, Supabase e n8n/Docker para apoiar respostas com informações da própria base antes da revisão. A base de conhecimento e seus dados não são publicados neste snapshot. |
+| **Evals públicos** | Harness offline e independente de provedor para grounding, fontes autorizadas, prompt injection, revisão humana e ação segura antes da publicação. |
 | **Integrações** | Meta Graph API, OAuth2, APIs HTTP e resultado independente por rede. |
 | **Confiabilidade** | Reserva por destino, `dispatchId`, idempotência, retry, ledger e falha isolada por canal. |
 | **Versão pública** | Exports inativos e sanitizados, demo sem chamadas externas, validação de privacidade e GitHub Actions. |
@@ -95,6 +96,16 @@ No ambiente original, uso uma camada de recuperação de contexto com **LangChai
 
 Essa camada é diferente do snapshot público: documentos, embeddings, registros e configurações da base interna permanecem privados. Portanto, este repositório demonstra publicamente o fluxo de publicação e seus guardrails, enquanto a implementação operacional de conhecimento é descrita sem expor o conteúdo corporativo.
 
+## Evals reproduzíveis
+
+A pasta [`evals/`](evals/README.md) transforma parte desses guardrails em contratos executáveis e independentes do provedor. Os casos são sintéticos e verificam fontes autorizadas, grounding mínimo, claims/instruções proibidas, preservação de revisão humana e `publishAction=hold` antes da decisão humana.
+
+```bash
+node evals/run-evals.mjs
+```
+
+O mesmo runner aceita um arquivo de outputs de outro prompt ou provedor, permitindo comparação futura sem publicar documentos corporativos ou exigir credenciais na CI. Esses evals **não são apresentados como benchmark de qualidade de modelo nem como prova de produção**; eles cobrem contratos de segurança e evidência que podem ser verificados offline.
+
 ## Decisões técnicas
 
 - separei interface, ações e mídia em três workflows;
@@ -111,6 +122,7 @@ Essa camada é diferente do snapshot público: documentos, embeddings, registros
 
 - [Arquitetura](docs/architecture.md)
 - [AI System Card](docs/AI_SYSTEM_CARD.md) — papel da IA, human-in-the-loop, risco de terceiros e limites
+- [Evals reproduzíveis](evals/README.md) — contratos offline de grounding, evidência e revisão humana
 - [Detalhes técnicos](docs/evidence.md)
 - [Operação do portal](docs/portal.md)
 - [Setup seguro](docs/setup.md)
@@ -125,10 +137,11 @@ Essa camada é diferente do snapshot público: documentos, embeddings, registros
 node scripts/build-portfolio-demo.mjs
 node scripts/validate-portfolio-workflows.mjs
 node scripts/validate-portal-code.mjs
+node evals/run-evals.mjs
 pwsh -NoProfile -File scripts/validate-workflows.ps1
 ```
 
-A validação rejeita JSON inválido, credenciais serializadas, e-mails reais, IDs internos, domínios temporários de túnel e exports ativos.
+A validação rejeita JSON inválido, credenciais serializadas, e-mails reais, IDs internos, domínios temporários de túnel e exports ativos. A CI também executa os evals públicos e falha se os contratos sintéticos deixarem de passar.
 
 ## Tecnologias
 
