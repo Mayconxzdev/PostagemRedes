@@ -4,7 +4,13 @@
 
 Desenvolvi uma central visual e três workflows n8n para organizar carrosséis técnicos, revisar legendas, escolher redes, aprovar conteúdo e registrar o resultado individual de cada tentativa de publicação.
 
-> **Estado atual:** revisei os workflows na instância local **n8n 2.33.5**. Facebook e Instagram foram exercitados em ambiente de teste. Uma tentativa posterior no Instagram encontrou limite do túnel público de mídia; X continua bloqueado por crédito da conta de teste e LinkedIn depende de acesso à Página.
+## O que este case prova
+
+- orquestração n8n com APIs externas e estado por destino;
+- **Prompt Engineering + RAG/grounding** com LangChain/Supabase;
+- aprovação humana antes de efeitos externos;
+- evals reproduzíveis para grounding, fontes autorizadas e prompt injection;
+- idempotência, retry, ledger e isolamento de falhas por canal.
 
 ## Visão geral
 
@@ -18,6 +24,8 @@ Desenvolvi uma central visual e três workflows n8n para organizar carrosséis t
 | **Integrações** | Meta Graph API, OAuth2, APIs HTTP e resultado independente por rede. |
 | **Confiabilidade** | Reserva por destino, `dispatchId`, idempotência, retry, ledger e falha isolada por canal. |
 | **Versão pública** | Exports inativos e sanitizados, demo sem chamadas externas, validação de privacidade e GitHub Actions. |
+
+> **Estado real:** Facebook e Instagram foram exercitados em ambiente de teste na instância n8n 2.33.5. Limites de infraestrutura/provedor e acessos externos permanecem documentados abaixo; o projeto não é apresentado como publicação multicanal em produção.
 
 ## Problema que resolvi
 
