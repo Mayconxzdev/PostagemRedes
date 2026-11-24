@@ -1,5 +1,9 @@
 # Postagem Redes
 
+[Case no portfólio](https://mayconxzdev.github.io/projetos/postagem-redes/)
+
+> Experimento editorial documentado; o uso recorrente foi encerrado. O repositório preserva o fluxo e as decisões de criação, revisão e publicação.
+
 [![Validação do projeto](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Mayconxzdev/PostagemRedes/actions/workflows/validate.yml)
 
 Desenvolvi uma central visual e três workflows n8n para organizar carrosséis técnicos, revisar legendas, escolher redes, aprovar conteúdo e registrar o resultado individual de cada tentativa de publicação.
